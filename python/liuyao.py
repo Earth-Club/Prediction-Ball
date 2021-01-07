@@ -7,6 +7,17 @@ from datetime import datetime
 from copy import deepcopy
 
 
+EIGHT_GONGS = ["乾", "坤", "兑", "离", "震", "巽", "坎", "艮"]
+TRIGRAM_NAMES = ["坤为地", "山地剥", "水地比", "风地观", "雷地豫", "火地晋", "泽地萃", "天地否", "地山谦", "艮为山", "水山蹇", "风山渐", "雷山小过", "火山旅", "泽山咸", "天山遁", "地水师", "山水蒙", "坎为水", "风水涣", "雷水解", "火水未济", "泽水困", "天水讼", "地风升", "山风蛊", "水风井", "巽为风", "雷风恒", "火风鼎", "泽风大过", "天风姤",
+                 "地雷复", "山雷颐", "水雷屯", "风雷益", "震为雷", "火雷噬嗑", "泽雷随", "天雷无妄", "地火明夷", "山火贲", "水火既济", "风火家人", "雷火丰", "离为火", "泽火革", "天火同人", "地泽临", "山泽损", "水泽节", "风泽中孚", "雷泽归妹", "火泽睽", "兑为泽", "天泽履", "地天泰", "山天大畜", "水天需", "风天小畜", "雷天大壮", "火天大有", "泽天夬", "乾为天"]
+SIX_RELATIVES = ["父母", "兄弟", "子孙", "妻财", "官鬼"]
+FIVE_ELEMENTS = ["金", "木", "水", "火", "土"]
+SIX_GODS = ["玄武", "青龙", "朱雀", "勾陈", "螣蛇", "白虎"]
+HEAVENLY_STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
+EARTHLY_BRANCHES = ["子", "丑", "寅", "卯",
+                    "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+
+
 def launch():
     while True:
         print("what's your doubt?")
@@ -86,7 +97,7 @@ class Trigram:
         self.pos = pos
 
     def get_name(self):
-        return Trigram.TRIGRAM_NAMES[self.pos]
+        return TRIGRAM_NAMES[self.pos]
 
     def __str__(self):
         return "name: {name}, trigram: {trigram}, pos: {pos}, values: {values}, altered: {altered}".format(
@@ -97,16 +108,13 @@ class Trigram:
             altered=self.altered
         )
 
-    EIGHT_GONGS = ["乾", "坤", "兑", "离", "震", "巽", "坎", "艮"]
-    TRIGRAM_NAMES = ["坤为地", "山地剥", "水地比", "风地观", "雷地豫", "火地晋", "泽地萃", "天地否", "地山谦", "艮为山", "水山蹇", "风山渐", "雷山小过", "火山旅", "泽山咸", "天山遁", "地水师", "山水蒙", "坎为水", "风水涣", "雷水解", "火水未济", "泽水困", "天水讼", "地风升", "山风蛊", "水风井", "巽为风", "雷风恒", "火风鼎", "泽风大过", "天风姤",
-                     "地雷复", "山雷颐", "水雷屯", "风雷益", "震为雷", "火雷噬嗑", "泽雷随", "天雷无妄", "地火明夷", "山火贲", "水火既济", "风火家人", "雷火丰", "离为火", "泽火革", "天火同人", "地泽临", "山泽损", "水泽节", "风泽中孚", "雷泽归妹", "火泽睽", "兑为泽", "天泽履", "地天泰", "山天大畜", "水天需", "风天小畜", "雷天大壮", "火天大有", "泽天夬", "乾为天"]
-    SIX_RELATIVES = ["父母", "兄弟", "子孙", "妻财", "官鬼"]
-    FIVE_ELEMENTS = ["金", "木", "水", "火", "土"]
-    SIX_GODS = ["玄武", "青龙", "朱雀", "勾陈", "螣蛇", "白虎"]
-    HEAVENLY_STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
-    EARTHLY_BRANCHES = ["子", "丑", "寅", "卯",
-                        "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
 
+def SixagenaryCycle(year, name=False):
+    h, e = (year-3+9) % 10, (year-3+11) % 12
+    if name:
+        return (h, e, HEAVENLY_STEMS[h], EARTHLY_BRANCHES[e])
+    else:
+        return (h, e)
 
 # Example data of SIXGODS:
 # [
@@ -392,4 +400,8 @@ class Trigram:
 
 
 if __name__ == "__main__":
+    # while True:
+    #     year = input("lunar year: ")
+    #     sixagenary_value = SixagenaryCycle(int(year), True)
+    #     print("The Sixagenary of ", year, "is ", sixagenary_value)
     launch()
