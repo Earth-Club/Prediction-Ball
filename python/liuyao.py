@@ -129,6 +129,10 @@ def SixagenaryMonth(year, month, name=False):
     else:
         return (h, e)
 
+
+def SixagenaryDay():
+    pass
+
 # Example data of SIXGODS:
 # [
 #   {
