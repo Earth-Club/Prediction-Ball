@@ -6,7 +6,6 @@ from lunardate import LunarDate
 from datetime import datetime
 from copy import deepcopy
 
-
 EIGHT_GONGS = ["乾", "坤", "兑", "离", "震", "巽", "坎", "艮"]
 TRIGRAM_NAMES = ["坤为地", "山地剥", "水地比", "风地观", "雷地豫", "火地晋", "泽地萃", "天地否", "地山谦", "艮为山", "水山蹇", "风山渐", "雷山小过", "火山旅", "泽山咸", "天山遁", "地水师", "山水蒙", "坎为水", "风水涣", "雷水解", "火水未济", "泽水困", "天水讼", "地风升", "山风蛊", "水风井", "巽为风", "雷风恒", "火风鼎", "泽风大过", "天风姤",
                  "地雷复", "山雷颐", "水雷屯", "风雷益", "震为雷", "火雷噬嗑", "泽雷随", "天雷无妄", "地火明夷", "山火贲", "水火既济", "风火家人", "雷火丰", "离为火", "泽火革", "天火同人", "地泽临", "山泽损", "水泽节", "风泽中孚", "雷泽归妹", "火泽睽", "兑为泽", "天泽履", "地天泰", "山天大畜", "水天需", "风天小畜", "雷天大壮", "火天大有", "泽天夬", "乾为天"]
@@ -38,10 +37,11 @@ def liuyao():
     now_solar = datetime.now()
     now_lunar = LunarDate.fromSolarDate(
         now_solar.year, now_solar.month, now_solar.day)
+    sixagenary_year = SixagenaryCyclicYear(now_lunar.year, True)
     print("Solar Date :", now_solar.year, "/",
           now_solar.month, "/", now_solar.day)
     print("Lunar Date :", now_lunar.year, "/",
-          now_lunar.month, "/", now_lunar.day)
+          now_lunar.month, "/", now_lunar.day, sixagenary_year[2]+sixagenary_year[3]+"年")
 
     # shake to generate random values.
     values = [0, 0, 0, 0, 0, 0]
@@ -109,8 +109,21 @@ class Trigram:
         )
 
 
-def SixagenaryCycle(year, name=False):
-    h, e = (year-3+9) % 10, (year-3+11) % 12
+def SixagenaryCyclicYear(year, name=False):
+    # algorithm is coming from https://zh.wikipedia.org/wiki/干支#西曆→干支紀年
+    h, e = (year-3+len(HEAVENLY_STEMS) -
+            1) % len(HEAVENLY_STEMS), (year-3+len(EARTHLY_BRANCHES)-1) % len(EARTHLY_BRANCHES)
+    if name:
+        return (h, e, HEAVENLY_STEMS[h], EARTHLY_BRANCHES[e])
+    else:
+        return (h, e)
+
+
+def SixagenaryMonth(year, month, name=False):
+    # algorithm is coming from https://zh.wikipedia.org/wiki/干支#干支纪月
+    e = (month+1) % len(EARTHLY_BRANCHES)
+    h = (year-3+len(HEAVENLY_STEMS)-1) % len(HEAVENLY_STEMS)
+    h = ((h % 5)*2 + 2 + month-1) % len(HEAVENLY_STEMS)
     if name:
         return (h, e, HEAVENLY_STEMS[h], EARTHLY_BRANCHES[e])
     else:
@@ -400,8 +413,13 @@ def SixagenaryCycle(year, name=False):
 
 
 if __name__ == "__main__":
-    # while True:
-    #     year = input("lunar year: ")
-    #     sixagenary_value = SixagenaryCycle(int(year), True)
-    #     print("The Sixagenary of ", year, "is ", sixagenary_value)
+    while True:
+        year = input("lunar year: ")
+        sixagenary_year = SixagenaryCyclicYear(int(year), True)
+        print("The Sixagenary of", year, "is",
+              sixagenary_year[2]+sixagenary_year[3]+"年")
+        for i in range(1, 13):
+            sixagenary_month = SixagenaryMonth(int(year), i, True)
+            print("The Sixagenary Month", i, "is",
+                  sixagenary_month[2]+sixagenary_month[3]+"月")
     launch()
