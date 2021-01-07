@@ -67,6 +67,7 @@ class Trigram:
 
     def set_values(self, values):
         v, trigram, pos = [], [], 0
+        values.reverse()
         for value in values:
             if value < 0 or value > 3:
                 raise Exception(
@@ -92,9 +93,11 @@ class Trigram:
             altered=self.altered
         )
 
-    NAMES = []
-    SIXGODS = []
-    EIGHTGONGS = []
+    NAMES = ["乾为天","天风姤","天山遁","天地否","风地观","山地剥","火地晋","火天大有","兑为泽","泽水困","泽地萃","泽山咸","水山蹇","地山谦","雷山小过","雷泽归妹","离为火","火山旅","火风鼎","火水未济"]
+    SIXRELATIVES = ["父母","兄弟","子孙","妻财","官鬼"]
+    EIGHTGONGS = ["乾","坤","兑","离","震","巽","坎","艮"]
+    FIVEELEMENTS = ["金","木","水","火","土"]
+    SIXGODS = ["玄武","青龙", "朱雀","勾陈","螣蛇","白虎"]
 
 # Example data of SIXGODS:
 # [
@@ -125,6 +128,254 @@ class Trigram:
 #   },
 #   {
 #     "text": "子孙子水",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+
+#   {
+#     "text": "子孙酉金",
+#     "shiyao": false,
+#     "yinyao": true
+#   }
+#   {
+#     "text": "妻财亥水",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "兄弟丑土",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "兄弟辰土",
+#     "shiyao": true,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "官鬼寅木",
+#     "shiyao": true,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "妻财子水",
+#     "shiyao": true,
+#     "yinyao": false
+#   }
+
+#   {
+#     "text": "兄弟未土",
+#     "shiyao": true,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "子孙酉金",
+#     "shiyao": true,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "妻财亥水",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "兄弟辰土",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "官鬼寅木",
+#     "shiyao": false,
+#     "yinyao": true
+#   }
+#   {
+#     "text": "妻财子水",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+
+#   {
+#     "text": "官鬼寅木",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "妻财子水",
+#     "shiyao": false,
+#     "yinyao": true
+#   }
+#   {
+#     "text": "兄弟戌土",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "兄弟辰土",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "官鬼寅木",
+#     "shiyao": true,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "妻财子水",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+
+#   {
+#     "text": "官鬼巳火",
+#     "shiyao": false,
+#     "yinyao": true
+#   }
+#   {
+#     "text": "父母未土",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "兄弟酉金",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "父母辰土",
+#     "shiyao": true,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "妻财寅木",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "子孙子水",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+
+#   {
+#     "text": "妻财子水",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "兄弟戌土",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "子孙申金",
+#     "shiyao": true,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "兄弟辰土",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "官鬼寅木",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "妻财子水",
+#     "shiyao": false,
+#     "yinyao": true
+#   }
+
+#   {
+#     "text": "兄弟戌土",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "子孙申金",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "父母午火",
+#     "shiyao": true,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "兄弟辰土",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "官鬼寅木",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "妻财子水",
+#     "shiyao": false,
+#     "yinyao": true
+#   }
+
+#   {
+#     "text": "兄弟卯木",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "子孙巳火",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "妻财未土",
+#     "shiyao": false,
+#     "yinyao": true
+#   }
+#   {
+#     "text": "妻财辰土",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "兄弟寅木",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "父母子水",
+#     "shiyao": true,
+#     "yinyao": false
+#   }
+
+#   {
+#     "text": "父母戌土",
+#     "shiyao": false,
+#     "yinyao": true
+#   }
+#   {
+#     "text": "兄弟申金",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "官鬼午火",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "妻财卯木",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "官鬼巳火",
+#     "shiyao": false,
+#     "yinyao": false
+#   }
+#   {
+#     "text": "父母未土",
 #     "shiyao": false,
 #     "yinyao": false
 #   }
