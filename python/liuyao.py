@@ -6,7 +6,7 @@ from lunardate import LunarDate
 from datetime import datetime
 from copy import deepcopy
 
-EIGHT_GONGS = ["乾", "坤", "兑", "离", "震", "巽", "坎", "艮"]
+EIGHT_GONGS = ["坤", "艮", "坎", "巽", "震", "离", "兑", "乾"]
 TRIGRAM_NAMES = ["坤为地", "山地剥", "水地比", "风地观", "雷地豫", "火地晋", "泽地萃", "天地否", "地山谦", "艮为山", "水山蹇", "风山渐", "雷山小过", "火山旅", "泽山咸", "天山遁", "地水师", "山水蒙", "坎为水", "风水涣", "雷水解", "火水未济", "泽水困", "天水讼", "地风升", "山风蛊", "水风井", "巽为风", "雷风恒", "火风鼎", "泽风大过", "天风姤",
                  "地雷复", "山雷颐", "水雷屯", "风雷益", "震为雷", "火雷噬嗑", "泽雷随", "天雷无妄", "地火明夷", "山火贲", "水火既济", "风火家人", "雷火丰", "离为火", "泽火革", "天火同人", "地泽临", "山泽损", "水泽节", "风泽中孚", "雷泽归妹", "火泽睽", "兑为泽", "天泽履", "地天泰", "山天大畜", "水天需", "风天小畜", "雷天大壮", "火天大有", "泽天夬", "乾为天"]
 SIX_RELATIVES = ["父母", "兄弟", "子孙", "妻财", "官鬼"]
@@ -99,12 +99,17 @@ class Trigram:
     def get_name(self):
         return TRIGRAM_NAMES[self.pos]
 
+    def get_eight_gong_name(self):
+        n = (self.trigram[0] << 2) + (self.trigram[1] << 1) + self.trigram[2]
+        return EIGHT_GONGS[n]
+
     def __str__(self):
-        return "name: {name}, trigram: {trigram}, pos: {pos}, values: {values}, altered: {altered}".format(
+        return "name: {name}, eight_gong: {eight_gong}, trigram: {trigram}, pos: {pos}, values: {values}, altered: {altered}".format(
             name=self.get_name(),
             trigram=self.trigram,
             pos=self.pos,
             values=self.values,
+            eight_gong=self.get_eight_gong_name(),
             altered=self.altered
         )
 
@@ -488,9 +493,9 @@ if __name__ == "__main__":
     #       str(lunar_date.month) + "/" + str(lunar_date.day))
     # print("Sixagenary is", sixagenary_year[2]+sixagenary_year[3]+"年",
     #       sixagenary_month[2]+sixagenary_month[3]+"月", sixagenary_day[2]+sixagenary_day[3]+"日")
-    for i in range(0, len(HEAVENLY_STEMS)):
-        print(i, HEAVENLY_STEMS[i], SixGodFromSixagenaryDay(
-            (i, ), True))
+    # for i in range(0, len(HEAVENLY_STEMS)):
+    #     print(i, HEAVENLY_STEMS[i], SixGodFromSixagenaryDay(
+    #         (i, ), True))
     # print(SixagenaryDay(1912, 2, 18, True))
     # print(SixagenaryDay(2021, 1, 5, True))
-    # launch()
+    launch()
