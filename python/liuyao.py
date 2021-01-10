@@ -113,7 +113,7 @@ class Trigram:
         i = 0 if inner else 3
         n = (self.trigram[i+0] << 2) + \
             (self.trigram[i+1] << 1) + self.trigram[i+2]
-        return (n, EIGHT_GONGS[n])
+        return (n, EIGHT_GONGS[n]) + FiveElementOfEightGong(n, name=name)
 
 # EIGHT_GONGS = ["坤", "艮", "坎", "巽", "震", "离", "兑", "乾"]
 #                  0    1    2     3     4    5     6    7
@@ -267,6 +267,27 @@ def FiveElementOfEarthlyBranch(e, name=True):
         n = 0
     else:
         raise Exception("invalid earthly branch", e)
+    if name:
+        return (n, FIVE_ELEMENTS[n])
+    else:
+        return (n, "")
+
+
+# EIGHT_GONGS = ["坤", "艮", "坎", "巽", "震", "离", "兑", "乾"]
+#                 0     1     2    3     4    5     6    7
+def FiveElementOfEightGong(e, name=True):
+    if e in [6, 7]:
+        n = 0
+    elif e in [3, 4]:
+        n = 1
+    elif e in [0, 1]:
+        n = 4
+    elif e in [2]:
+        n = 2
+    elif e in [5]:
+        n = 3
+    else:
+        raise Exception("invalid Eight Gong", e)
     if name:
         return (n, FIVE_ELEMENTS[n])
     else:
