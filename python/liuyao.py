@@ -11,7 +11,7 @@ TRIGRAM_NAMES = ["坤为地", "山地剥", "水地比", "风地观", "雷地豫"
                  "地雷复", "山雷颐", "水雷屯", "风雷益", "震为雷", "火雷噬嗑", "泽雷随", "天雷无妄", "地火明夷", "山火贲", "水火既济", "风火家人", "雷火丰", "离为火", "泽火革", "天火同人", "地泽临", "山泽损", "水泽节", "风泽中孚", "雷泽归妹", "火泽睽", "兑为泽", "天泽履", "地天泰", "山天大畜", "水天需", "风天小畜", "雷天大壮", "火天大有", "泽天夬", "乾为天"]
 SIX_RELATIVES = ["父母", "兄弟", "子孙", "妻财", "官鬼"]
 FIVE_ELEMENTS = ["金", "木", "水", "火", "土"]
-SIX_GODS = ["玄武", "青龙", "朱雀", "勾陈", "螣蛇", "白虎"]
+SIX_GODS = ["青龙", "朱雀", "勾陈", "螣蛇", "白虎", "玄武"]
 HEAVENLY_STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
 EARTHLY_BRANCHES = ["子", "丑", "寅", "卯",
                     "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
@@ -116,7 +116,7 @@ def SixagenaryCyclicYear(lunar_year, name=False):
     if name:
         return (h, e, HEAVENLY_STEMS[h], EARTHLY_BRANCHES[e])
     else:
-        return (h, e)
+        return (h, e, "", "")
 
 
 def SixagenaryMonth(lunar_year, lunar_month, name=False):
@@ -127,7 +127,7 @@ def SixagenaryMonth(lunar_year, lunar_month, name=False):
     if name:
         return (h, e, HEAVENLY_STEMS[h], EARTHLY_BRANCHES[e])
     else:
-        return (h, e)
+        return (h, e, "", "")
 
 
 def SixagenaryDay(solar_year, solar_month, solar_day, name=False):
@@ -160,8 +160,26 @@ def SixagenaryDay(solar_year, solar_month, solar_day, name=False):
     if name:
         return (h, e, HEAVENLY_STEMS[h], EARTHLY_BRANCHES[e])
     else:
-        return (h, e)
+        return (h, e, "", "")
 
+
+def SixGodFromSixagenaryDay(sixagenary_day, name=False):
+    # 原来天干是用Yin/Yang的五行来表示，地支是用12生肖来表示。那这个每个爻对应的六神，是根据干支纪日来对应的。比如甲乙（日），Yang Wood & Yin Wood，Wood属木，木为青龙，则初爻为青龙，然后按“一青龍、二朱雀、三勾陳、四「騰蛇」、五白虎，六玄武”这样的顺序给二爻、三爻、四爻、五爻、上爻对应上。
+    # 有一点不太一样的就是“戊 Yang Earth”和“己 Yin Earth”，都是土，但戊是勾陈，己是腾蛇属火。
+    # from https://en.wikipedia.org/wiki/Sexagenary_cycle
+    h = sixagenary_day[0]
+    if h < 4:
+        a = int(h/2)
+    elif h == 4:
+        a = 2
+    elif h == 5:
+        a = 3
+    else:
+        a = int(h/2)+1
+    if name:
+        return (a, SIX_GODS[a])
+    else:
+        return (a, "")
 
 # Example data of SIXGODS:
 # [
@@ -456,20 +474,23 @@ if __name__ == "__main__":
     #         sixagenary_month = SixagenaryMonth(int(year), i, True)
     #         print("The Sixagenary Month", i, "is",
     #               sixagenary_month[2]+sixagenary_month[3]+"月")
-    while True:
-        year = int(input("Solar Year:  "))
-        month = int(input("Solar Month: "))
-        day = int(input("Solar Day:   "))
-        lunar_date = LunarDate.fromSolarDate(year, month, day)
-        sixagenary_year = SixagenaryCyclicYear(lunar_date.year, True)
-        sixagenary_month = SixagenaryMonth(
-            lunar_date.year, lunar_date.month, True)
-        sixagenary_day = SixagenaryDay(year, month, day, True)
-        print("Solar Date is", str(year) + "/" + str(month) + "/" + str(day))
-        print("Lunar Date is", str(lunar_date.year) + "/" +
-              str(lunar_date.month) + "/" + str(lunar_date.day))
-        print("Sixagenary is", sixagenary_year[2]+sixagenary_year[3]+"年",
-              sixagenary_month[2]+sixagenary_month[3]+"月", sixagenary_day[2]+sixagenary_day[3]+"日")
+    # while True:
+    # year = int(input("Solar Year:  "))
+    # month = int(input("Solar Month: "))
+    # day = int(input("Solar Day:   "))
+    # lunar_date = LunarDate.fromSolarDate(year, month, day)
+    # sixagenary_year = SixagenaryCyclicYear(lunar_date.year, True)
+    # sixagenary_month = SixagenaryMonth(
+    #     lunar_date.year, lunar_date.month, True)
+    # sixagenary_day = SixagenaryDay(year, month, day, True)
+    # print("Solar Date is", str(year) + "/" + str(month) + "/" + str(day))
+    # print("Lunar Date is", str(lunar_date.year) + "/" +
+    #       str(lunar_date.month) + "/" + str(lunar_date.day))
+    # print("Sixagenary is", sixagenary_year[2]+sixagenary_year[3]+"年",
+    #       sixagenary_month[2]+sixagenary_month[3]+"月", sixagenary_day[2]+sixagenary_day[3]+"日")
+    for i in range(0, len(HEAVENLY_STEMS)):
+        print(i, HEAVENLY_STEMS[i], SixGodFromSixagenaryDay(
+            (i, ), True))
     # print(SixagenaryDay(1912, 2, 18, True))
     # print(SixagenaryDay(2021, 1, 5, True))
     # launch()
