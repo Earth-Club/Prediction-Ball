@@ -99,9 +99,36 @@ class Trigram:
     def get_name(self):
         return TRIGRAM_NAMES[self.pos]
 
+    def get_eight_gong(self):
+        return (self.trigram[0] << 2) + (self.trigram[1] << 1) + self.trigram[2]
+
     def get_eight_gong_name(self):
-        n = (self.trigram[0] << 2) + (self.trigram[1] << 1) + self.trigram[2]
-        return EIGHT_GONGS[n]
+        return EIGHT_GONGS[self.get_eight_gong()]
+
+    def get_earthly_branchs_of_first_yao(self, name=False):
+        n = self.get_eight_gong()
+        if n == 0:
+            v = -5
+        elif n == 1:
+            v = 4
+        elif n == 2:
+            v = 2
+        elif n == 3:
+            v = -11
+        elif n == 4:
+            v = 0
+        elif n == 5:
+            v = -9
+        elif n == 6:
+            v = -7
+        elif n == 7:
+            v = 0
+        else:
+            v = 0
+        if name:
+            return (v, EARTHLY_BRANCHES[v])
+        else:
+            return (v, "")
 
     def __str__(self):
         return "name: {name}, eight_gong: {eight_gong}, trigram: {trigram}, pos: {pos}, values: {values}, altered: {altered}".format(
@@ -498,4 +525,7 @@ if __name__ == "__main__":
     #         (i, ), True))
     # print(SixagenaryDay(1912, 2, 18, True))
     # print(SixagenaryDay(2021, 1, 5, True))
+    for i in range(0, 8):
+        trigram = Trigram([0, 0, 0, i % 2, (i >> 1) % 2, (i >> 2) % 2])
+        print(trigram, "初爻", trigram.get_earthly_branchs_of_first_yao(True))
     launch()
