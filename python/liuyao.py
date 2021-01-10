@@ -110,7 +110,7 @@ class Trigram:
     def get_name(self):
         return TRIGRAM_NAMES[self.pos]
 
-    def get_eight_gong(self, inner=True, name=False):
+    def get_eight_gone_of_half_trigram(self, inner=True, name=False):
         i = 0 if inner else 3
         n = (self.trigram[i+0] << 2) + \
             (self.trigram[i+1] << 1) + self.trigram[i+2]
@@ -125,7 +125,7 @@ class Trigram:
 #                      0     1    2     3     4    5     6    7     8     9    10    11
 
     def get_earthly_branchs_of_yao(self, inner=True, name=False):
-        n = self.get_eight_gong(inner=inner)[0]
+        n = self.get_eight_gone_of_half_trigram(inner=inner)[0]
         if n == 0:
             v, reverse = 7 if inner else 1, True
         elif n == 1:
@@ -168,7 +168,7 @@ class Trigram:
                     ret.append((n, "", five_element[0], five_element[1]))
         return ret
 
-    def get_bengonggua(self, name=False):
+    def get_eight_gong(self, name=False):
         # calculate BenGongGua
         for xor in [0b0, 0b100000, 0b110000, 0b111000, 0b111100, 0b111110, 0b111010, 0b000010]:
             v = self.pos ^ xor
@@ -176,10 +176,10 @@ class Trigram:
             n = BEN_GONG_GUA.get(v)
             if n is not None:
                 if name:
-                    return (n, EIGHT_GONGS[n])
+                    return (n, EIGHT_GONGS[n]) + FiveElementOfEightGong(n, name)
                 else:
-                    return (n, "")
-        raise Exception("can't find a valid BenGongGua", self.pos)
+                    return (n, "") + FiveElementOfEightGong(n, name)
+        raise Exception("can't find a valid Ben Gong Gua", self.pos)
 
     def __str__(self):
         return "name: {name}, eight_gong: {eight_gong}, trigram: {trigram}, pos: {pos}, values: {values}, altered: {altered}".format(
@@ -622,6 +622,6 @@ if __name__ == "__main__":
     for i in range(0, 64):
         trigram = Trigram([i % 2, (i >> 1) % 2, (i >> 2) %
                            2, (i >> 3) % 2, (i >> 4) % 2, (i >> 5) % 2])
-        # print(trigram, trigram.get_earthly_branchs_and_five_elements(True), "\n")
-        print(trigram, trigram.get_bengonggua(True), "\n")
+        print(trigram, trigram.get_earthly_branchs_and_five_elements(True), "\n")
+        # print(trigram, trigram.get_bengonggua(True), "\n")
     launch()
