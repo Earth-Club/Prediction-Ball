@@ -25,7 +25,10 @@ SIX_GODS = ["青龙", "朱雀", "勾陈", "螣蛇", "白虎", "玄武"]
 HEAVENLY_STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
 EARTHLY_BRANCHES = ["子", "丑", "寅", "卯",
                     "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
-BEN_GONG_GUA = {63: 7, 36: 4, 18: 2, 9: 1, 0: 0, 27: 3, 45: 5, 54: 6}
+BEN_GONG_TRIGRAM = {63: 7, 36: 4, 18: 2, 9: 1, 0: 0, 27: 3, 45: 5, 54: 6}
+
+FIVE_ELEMENTS_PROMOTING = {0: 2, 2: 1, 1: 3, 3: 4, 4: 0}
+FIVE_ELEMENTS_REGULATING = {0: 1, 1: 4, 4: 2, 2: 3, 3: 0}
 
 
 def launch():
@@ -173,13 +176,48 @@ class Trigram:
         for xor in [0b0, 0b100000, 0b110000, 0b111000, 0b111100, 0b111110, 0b111010, 0b000010]:
             v = self.pos ^ xor
             # print(bin(self.pos), bin(v))
-            n = BEN_GONG_GUA.get(v)
+            n = BEN_GONG_TRIGRAM.get(v)
             if n is not None:
                 if name:
                     return (n, EIGHT_GONGS[n]) + FiveElementOfEightGong(n, name)
                 else:
                     return (n, "") + FiveElementOfEightGong(n, name)
         raise Exception("can't find a valid Ben Gong Gua", self.pos)
+
+# SIX_RELATIVES = ["父母", "兄弟", "子孙", "妻财", "官鬼"]
+    def get_six_relatives(self, name=False):
+        earthly_branches_of_yao = self.get_earthly_branchs_and_five_elements(
+            name)
+        eight_gong = self.get_eight_gong(name)
+        brother = eight_gong[2]
+
+        # print("eight_gong:", eight_gong)
+        # print("earthly_branches:", earthly_branches_of_yao)
+
+        data = {}
+        # brother.
+        data[eight_gong[2]] = 1
+        # promoting
+        for it in FIVE_ELEMENTS_PROMOTING.items():
+            if it[0] == brother:
+                data[it[1]] = 2
+            elif it[1] == brother:
+                data[it[0]] = 0
+        # regulating
+        for it in FIVE_ELEMENTS_REGULATING.items():
+            if it[0] == brother:
+                data[it[1]] = 3
+            elif it[1] == brother:
+                data[it[0]] = 4
+
+        ret = []
+        for it in earthly_branches_of_yao:
+            n = data[it[2]]
+            if name:
+                ret.append(it + (n, SIX_RELATIVES[n]))
+            else:
+                ret.append(it + (n, ""))
+        return eight_gong, ret
 
     def __str__(self):
         return "name: {name}, eight_gong: {eight_gong}, trigram: {trigram}, pos: {pos}, values: {values}, altered: {altered}".format(
@@ -622,6 +660,7 @@ if __name__ == "__main__":
     for i in range(0, 64):
         trigram = Trigram([i % 2, (i >> 1) % 2, (i >> 2) %
                            2, (i >> 3) % 2, (i >> 4) % 2, (i >> 5) % 2])
-        print(trigram, trigram.get_earthly_branchs_and_five_elements(True), "\n")
+        # print(trigram, trigram.get_earthly_branchs_and_five_elements(True), "\n")
+        print(trigram, "six_relatives: ", trigram.get_six_relatives(True))
         # print(trigram, trigram.get_bengonggua(True), "\n")
     launch()
