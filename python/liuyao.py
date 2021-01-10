@@ -109,29 +109,48 @@ class Trigram:
         )
 
 
-def SixagenaryCyclicYear(year, name=False):
+def SixagenaryCyclicYear(lunar_year, name=False):
     # algorithm is coming from https://zh.wikipedia.org/wiki/干支#西曆→干支紀年
-    h, e = (year-3+len(HEAVENLY_STEMS) -
-            1) % len(HEAVENLY_STEMS), (year-3+len(EARTHLY_BRANCHES)-1) % len(EARTHLY_BRANCHES)
+    h, e = (lunar_year-3+len(HEAVENLY_STEMS) -
+            1) % len(HEAVENLY_STEMS), (lunar_year-3+len(EARTHLY_BRANCHES)-1) % len(EARTHLY_BRANCHES)
     if name:
         return (h, e, HEAVENLY_STEMS[h], EARTHLY_BRANCHES[e])
     else:
         return (h, e)
 
 
-def SixagenaryMonth(year, month, name=False):
+def SixagenaryMonth(lunar_year, lunar_month, name=False):
     # algorithm is coming from https://zh.wikipedia.org/wiki/干支#干支纪月
-    e = (month+1) % len(EARTHLY_BRANCHES)
-    h = (year-3+len(HEAVENLY_STEMS)-1) % len(HEAVENLY_STEMS)
-    h = ((h % 5)*2 + 2 + month-1) % len(HEAVENLY_STEMS)
+    e = (lunar_month+1) % len(EARTHLY_BRANCHES)
+    h = (lunar_year-3+len(HEAVENLY_STEMS)-1) % len(HEAVENLY_STEMS)
+    h = ((h % 5)*2 + 2 + lunar_month-1) % len(HEAVENLY_STEMS)
     if name:
         return (h, e, HEAVENLY_STEMS[h], EARTHLY_BRANCHES[e])
     else:
         return (h, e)
 
 
-def SixagenaryDay():
-    pass
+def SixagenaryDay(solar_year, solar_month, solar_day, name=False):
+    # algorithm is coming from https://zh.wikipedia.org/wiki/干支#干支纪日
+    C = int(solar_year / 100)
+    M = solar_month if solar_month > 2 else solar_month+12
+    i = 6 if solar_year % 4 == 0 else 0 if solar_month > 2 else 5
+
+    a = solar_year % 80
+    b = (5*a + int((a/4))) % 60
+    c = 10 + int((C/4)) - C
+    d = ((M+1) % 2)*30 + int((0.6*(M+1)-3)) - i
+    e = solar_day
+    f = (b+c+d+e) % 60
+    # print(C, M, i, a, b, c, d, e)
+
+    h, e = (f+len(HEAVENLY_STEMS)-1) % len(HEAVENLY_STEMS), (f +
+                                                             len(EARTHLY_BRANCHES)-1) % len(EARTHLY_BRANCHES)
+    if name:
+        return (h, e, HEAVENLY_STEMS[h], EARTHLY_BRANCHES[e])
+    else:
+        return (h, e)
+
 
 # Example data of SIXGODS:
 # [
@@ -417,13 +436,15 @@ def SixagenaryDay():
 
 
 if __name__ == "__main__":
-    while True:
-        year = input("lunar year: ")
-        sixagenary_year = SixagenaryCyclicYear(int(year), True)
-        print("The Sixagenary of", year, "is",
-              sixagenary_year[2]+sixagenary_year[3]+"年")
-        for i in range(1, 13):
-            sixagenary_month = SixagenaryMonth(int(year), i, True)
-            print("The Sixagenary Month", i, "is",
-                  sixagenary_month[2]+sixagenary_month[3]+"月")
-    launch()
+    # while True:
+    #     year = input("lunar year: ")
+    #     sixagenary_year = SixagenaryCyclicYear(int(year), True)
+    #     print("The Sixagenary of", year, "is",
+    #           sixagenary_year[2]+sixagenary_year[3]+"年")
+    #     for i in range(1, 13):
+    #         sixagenary_month = SixagenaryMonth(int(year), i, True)
+    #         print("The Sixagenary Month", i, "is",
+    #               sixagenary_month[2]+sixagenary_month[3]+"月")
+    print(SixagenaryDay(1912, 2, 18, True))
+    print(SixagenaryDay(2021, 1, 5, True))
+    # launch()
