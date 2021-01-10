@@ -127,7 +127,7 @@ class Trigram:
 # EARTHLY_BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
 #                      0     1    2     3     4    5     6    7     8     9    10    11
 
-    def get_earthly_branchs_of_yao(self, inner=True, name=False):
+    def get_earthly_branches_of_yao(self, inner=True, name=False):
         n = self.get_eight_gone_of_half_trigram(inner=inner)[0]
         if n == 0:
             v, reverse = 7 if inner else 1, True
@@ -153,10 +153,10 @@ class Trigram:
         else:
             return (v, "", reverse)
 
-    def get_earthly_branchs_and_five_elements(self, name=True):
+    def get_earthly_branches_and_five_elements(self, name=True):
         ret = []
         for inner in [True, False]:
-            earthly_branch_of_first_yao = self.get_earthly_branchs_of_yao(
+            earthly_branch_of_first_yao = self.get_earthly_branches_of_yao(
                 inner=inner)
             # print(inner, first_yao)
             for i in range(0, 3):
@@ -186,7 +186,7 @@ class Trigram:
 
 # SIX_RELATIVES = ["父母", "兄弟", "子孙", "妻财", "官鬼"]
     def get_six_relatives(self, name=False):
-        earthly_branches_of_yao = self.get_earthly_branchs_and_five_elements(
+        earthly_branches_of_yao = self.get_earthly_branches_and_five_elements(
             name)
         eight_gong = self.get_eight_gong(name)
         brother = eight_gong[2]
@@ -660,7 +660,7 @@ if __name__ == "__main__":
     for i in range(0, 64):
         trigram = Trigram([i % 2, (i >> 1) % 2, (i >> 2) %
                            2, (i >> 3) % 2, (i >> 4) % 2, (i >> 5) % 2])
-        # print(trigram, trigram.get_earthly_branchs_and_five_elements(True), "\n")
+        # print(trigram, trigram.get_earthly_branches_and_five_elements(True), "\n")
         print(trigram, "six_relatives: ", trigram.get_six_relatives(True))
         # print(trigram, trigram.get_bengonggua(True), "\n")
     launch()
