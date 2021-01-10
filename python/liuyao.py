@@ -6,6 +6,16 @@ from lunardate import LunarDate
 from datetime import datetime
 from copy import deepcopy
 
+# EARTHLY_BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+#    2     4    1     1    4     3     3     4    0     0    4     2
+
+
+# EIGHT_GONGS = ["坤", "艮", "坎", "巽", "震", "离", "兑", "乾"]
+#                 0     1     2    3     4    5     6     7
+#                 -                -          -     -
+#                 -5              -11        -9    -7
+#                       4    2          0                0
+
 EIGHT_GONGS = ["坤", "艮", "坎", "巽", "震", "离", "兑", "乾"]
 TRIGRAM_NAMES = ["坤为地", "山地剥", "水地比", "风地观", "雷地豫", "火地晋", "泽地萃", "天地否", "地山谦", "艮为山", "水山蹇", "风山渐", "雷山小过", "火山旅", "泽山咸", "天山遁", "地水师", "山水蒙", "坎为水", "风水涣", "雷水解", "火水未济", "泽水困", "天水讼", "地风升", "山风蛊", "水风井", "巽为风", "雷风恒", "火风鼎", "泽风大过", "天风姤",
                  "地雷复", "山雷颐", "水雷屯", "风雷益", "震为雷", "火雷噬嗑", "泽雷随", "天雷无妄", "地火明夷", "山火贲", "水火既济", "风火家人", "雷火丰", "离为火", "泽火革", "天火同人", "地泽临", "山泽损", "水泽节", "风泽中孚", "雷泽归妹", "火泽睽", "兑为泽", "天泽履", "地天泰", "山天大畜", "水天需", "风天小畜", "雷天大壮", "火天大有", "泽天夬", "乾为天"]
@@ -99,36 +109,63 @@ class Trigram:
     def get_name(self):
         return TRIGRAM_NAMES[self.pos]
 
-    def get_eight_gong(self):
-        return (self.trigram[0] << 2) + (self.trigram[1] << 1) + self.trigram[2]
+    def get_eight_gong(self, inner=True, name=False):
+        i = 0 if inner else 3
+        n = (self.trigram[i+0] << 2) + \
+            (self.trigram[i+1] << 1) + self.trigram[i+2]
+        return (n, EIGHT_GONGS[n])
 
-    def get_eight_gong_name(self):
-        return EIGHT_GONGS[self.get_eight_gong()]
+# EIGHT_GONGS = ["坤", "艮", "坎", "巽", "震", "离", "兑", "乾"]
+#                  0    1    2     3     4    5     6    7
+# inner:           7r   4    2     1r    0    3r    5r   0
+# outer:           1r   10   8     7r    6    9r    11r  6
 
-    def get_earthly_branchs_of_first_yao(self, name=False):
-        n = self.get_eight_gong()
+# EARTHLY_BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+#                      0     1    2     3     4    5     6    7     8     9    10    11
+
+    def get_earthly_branchs_of_yao(self, inner=True, name=False):
+        n = self.get_eight_gong(inner=inner)[0]
         if n == 0:
-            v = -5
+            v, reverse = 7 if inner else 1, True
         elif n == 1:
-            v = 4
+            v, reverse = 4 if inner else 10, False
         elif n == 2:
-            v = 2
+            v, reverse = 2 if inner else 8, False
         elif n == 3:
-            v = -11
+            v, reverse = 1 if inner else 7, True
         elif n == 4:
-            v = 0
+            v, reverse = 0 if inner else 6, False
         elif n == 5:
-            v = -9
+            v, reverse = 3 if inner else 9, True
         elif n == 6:
-            v = -7
+            v, reverse = 5 if inner else 11, True
         elif n == 7:
-            v = 0
+            v, reverse = 0 if inner else 6, False
         else:
-            v = 0
+            raise Exception("invalid eight gone index", n)
+        # print(inner, n, v)
         if name:
-            return (v, EARTHLY_BRANCHES[v])
+            return (v, EARTHLY_BRANCHES[v], reverse)
         else:
-            return (v, "")
+            return (v, "", reverse)
+
+    def get_earthly_branchs_and_five_elements(self, name=True):
+        ret = []
+        for inner in [True, False]:
+            earthly_branch_of_first_yao = self.get_earthly_branchs_of_yao(
+                inner=inner)
+            # print(inner, first_yao)
+            for i in range(0, 3):
+                n = -1 if earthly_branch_of_first_yao[2] else 1
+                n = (earthly_branch_of_first_yao[0] +
+                     i*2*n) % len(EARTHLY_BRANCHES)
+                five_element = FiveElementOfEarthlyBranch(n, name=name)
+                if name:
+                    ret.append(
+                        (n, EARTHLY_BRANCHES[n], five_element[0], five_element[1]))
+                else:
+                    ret.append((n, "", five_element[0], five_element[1]))
+        return ret
 
     def __str__(self):
         return "name: {name}, eight_gong: {eight_gong}, trigram: {trigram}, pos: {pos}, values: {values}, altered: {altered}".format(
@@ -136,7 +173,7 @@ class Trigram:
             trigram=self.trigram,
             pos=self.pos,
             values=self.values,
-            eight_gong=self.get_eight_gong_name(),
+            eight_gong=self.get_eight_gong(name=True),
             altered=self.altered
         )
 
@@ -212,6 +249,28 @@ def SixGodFromSixagenaryDay(sixagenary_day, name=False):
         return (a, SIX_GODS[a])
     else:
         return (a, "")
+
+# FIVE_ELEMENTS = ["金", "木", "水", "火", "土"]
+#                   0     1     2    3     4
+
+
+def FiveElementOfEarthlyBranch(e, name=True):
+    if e in [0, 11]:
+        n = 2
+    elif e in [1, 4, 7, 10]:
+        n = 4
+    elif e in [2, 3]:
+        n = 1
+    elif e in [5, 6]:
+        n = 3
+    elif e in [8, 9]:
+        n = 0
+    else:
+        raise Exception("invalid earthly branch", e)
+    if name:
+        return (n, FIVE_ELEMENTS[n])
+    else:
+        return (n, "")
 
 # Example data of SIXGODS:
 # [
@@ -525,7 +584,8 @@ if __name__ == "__main__":
     #         (i, ), True))
     # print(SixagenaryDay(1912, 2, 18, True))
     # print(SixagenaryDay(2021, 1, 5, True))
-    for i in range(0, 8):
-        trigram = Trigram([0, 0, 0, i % 2, (i >> 1) % 2, (i >> 2) % 2])
-        print(trigram, "初爻", trigram.get_earthly_branchs_of_first_yao(True))
+    for i in range(0, 64):
+        trigram = Trigram([i % 2, (i >> 1) % 2, (i >> 2) %
+                           2, (i >> 3) % 2, (i >> 4) % 2, (i >> 5) % 2])
+        print(trigram, trigram.get_earthly_branchs_and_five_elements(True), "\n")
     launch()
