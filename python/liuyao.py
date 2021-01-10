@@ -173,15 +173,23 @@ class Trigram:
 
     def get_eight_gong(self, name=False):
         # calculate BenGongGua
-        for xor in [0b0, 0b100000, 0b110000, 0b111000, 0b111100, 0b111110, 0b111010, 0b000010]:
+        for idx, xor in enumerate([0b0, 0b100000, 0b110000, 0b111000, 0b111100, 0b111110, 0b111010, 0b000010]):
             v = self.pos ^ xor
             # print(bin(self.pos), bin(v))
             n = BEN_GONG_TRIGRAM.get(v)
             if n is not None:
-                if name:
-                    return (n, EIGHT_GONGS[n]) + FiveElementOfEightGong(n, name)
+                if idx == 6:
+                    i = 3
+                elif idx == 7:
+                    i = 2
+                elif idx == 0:
+                    i = 5
                 else:
-                    return (n, "") + FiveElementOfEightGong(n, name)
+                    i = idx+5
+                if name:
+                    return (n, EIGHT_GONGS[n]) + FiveElementOfEightGong(n, name) + (i % 6, (i+3) % 6)
+                else:
+                    return (n, "") + FiveElementOfEightGong(n, name) + (i % 6, (i+3) % 6)
         raise Exception("can't find a valid Ben Gong Gua", self.pos)
 
 # SIX_RELATIVES = ["父母", "兄弟", "子孙", "妻财", "官鬼"]
@@ -211,12 +219,14 @@ class Trigram:
                 data[it[0]] = 4
 
         ret = []
-        for it in earthly_branches_of_yao:
+        for idx, it in enumerate(earthly_branches_of_yao):
             n = data[it[2]]
+            shi = "世" if eight_gong[4] == idx else ""
+            ying = "应" if eight_gong[5] == idx else ""
             if name:
-                ret.append(it + (n, SIX_RELATIVES[n]))
+                ret.append(it + (n, SIX_RELATIVES[n], shi, ying))
             else:
-                ret.append(it + (n, ""))
+                ret.append(it + (n, "", shi, ying))
         return eight_gong, ret
 
     def __str__(self):
