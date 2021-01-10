@@ -132,18 +132,29 @@ def SixagenaryMonth(lunar_year, lunar_month, name=False):
 
 def SixagenaryDay(solar_year, solar_month, solar_day, name=False):
     # algorithm is coming from https://zh.wikipedia.org/wiki/干支#干支纪日
-    C = int(solar_year / 100)
-    M = solar_month if solar_month > 2 else solar_month+12
-    i = 6 if solar_year % 4 == 0 else 0 if solar_month > 2 else 5
+    # C = int(solar_year / 100)
+    # M = solar_month if solar_month > 2 else solar_month+12
+    # i = 6 if solar_year % 4 == 0 else 0 if solar_month > 2 else 5
 
-    a = solar_year % 80
-    b = (5*a + int((a/4))) % 60
-    c = 10 + int((C/4)) - C
-    d = ((M+1) % 2)*30 + int((0.6*(M+1)-3)) - i
-    e = solar_day
-    f = (b+c+d+e) % 60
+    # a = solar_year % 80
+    # b = (5*a + int((a/4))) % 60
+    # c = 10 + int((C/4)) - C
+    # d = ((M+1) % 2)*30 + int((0.6*(M+1)-3)) - i
+    # e = solar_day
+    # f = (b+c+d+e) % 60
     # print(C, M, i, a, b, c, d, e)
 
+    # algorithm is coming from https://en.wikipedia.org/wiki/Sexagenary_cycle#Sexagenary_days
+    # still incorrect with result from https://www.china95.net/paipan/liuyao/liuyao.asp
+    i = 6 if solar_year % 4 == 0 else 6 if solar_month <= 2 else 0 if solar_month % 2 == 0 else 6
+    m = solar_month if solar_month > 2 else solar_month + 12
+
+    y0 = (solar_year % 400) % 80
+    y = (y0 % 12) * 5 + int(y0/4) % 60
+    c = int(solar_year/400) - int(solar_year/100) + 10
+    m = ((m+1) % 2)*30 + int(0.6*(m+1)-3) - i
+    f = (y+c+m+solar_day) % 60
+    # print(i, y0, y, c, m, f)
     h, e = (f+len(HEAVENLY_STEMS)-1) % len(HEAVENLY_STEMS), (f +
                                                              len(EARTHLY_BRANCHES)-1) % len(EARTHLY_BRANCHES)
     if name:
