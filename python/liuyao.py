@@ -445,6 +445,20 @@ if __name__ == "__main__":
     #         sixagenary_month = SixagenaryMonth(int(year), i, True)
     #         print("The Sixagenary Month", i, "is",
     #               sixagenary_month[2]+sixagenary_month[3]+"月")
-    print(SixagenaryDay(1912, 2, 18, True))
-    print(SixagenaryDay(2021, 1, 5, True))
+    while True:
+        year = int(input("Solar Year:  "))
+        month = int(input("Solar Month: "))
+        day = int(input("Solar Day:   "))
+        lunar_date = LunarDate.fromSolarDate(year, month, day)
+        sixagenary_year = SixagenaryCyclicYear(lunar_date.year, True)
+        sixagenary_month = SixagenaryMonth(
+            lunar_date.year, lunar_date.month, True)
+        sixagenary_day = SixagenaryDay(year, month, day, True)
+        print("Solar Date is", str(year) + "/" + str(month) + "/" + str(day))
+        print("Lunar Date is", str(lunar_date.year) + "/" +
+              str(lunar_date.month) + "/" + str(lunar_date.day))
+        print("Sixagenary is", sixagenary_year[2]+sixagenary_year[3]+"年",
+              sixagenary_month[2]+sixagenary_month[3]+"月", sixagenary_day[2]+sixagenary_day[3]+"日")
+    # print(SixagenaryDay(1912, 2, 18, True))
+    # print(SixagenaryDay(2021, 1, 5, True))
     # launch()
