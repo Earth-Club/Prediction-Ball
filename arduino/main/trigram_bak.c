@@ -99,6 +99,68 @@ TRIGRAM trigram_new(RAWTRIGRAM raw) {
   return trigram;
 }
 
+int trigram_get_eight_gong(TRIGRAM trigram, bool inner_trigram) {
+  int x = inner_trigram ? 3 : 0;
+
+  int idx = 0;
+  for(int i=0;i<3;i++) {
+    int d = (trigram >> (x+i)) & 1;
+    idx = (idx << 1) + d;
+    // printf("%d", d);
+  }
+  // printf(": %d\n", idx);
+  return idx;
+}
+
+int trigram_get_earthly_branch(TRIGRAM trigram, bool inner_trigram) {
+  int eight_gong_idx = trigram_get_eight_gong(trigram, inner_trigram);
+  switch (eight_gong_idx) {
+    case 0:
+      return -1 * (inner_trigram ? 7 : 1);
+    case 1:
+      return 1 * (inner_trigram ? 4 : 10);
+    case 2:
+      return 1 * (inner_trigram ? 2 : 8);
+    case 3:
+      return -1 * (inner_trigram ? 1 : 7);
+    case 4:
+      return 1 * (inner_trigram ? 0 : 6);
+    case 5:
+      return -1 * (inner_trigram ? 3 : 9);
+    case 6:
+      return -1 * (inner_trigram ? 5 : 11);
+    case 7:
+      return 1 * (inner_trigram ? 0 : 6);
+    default:
+      return 0;
+  }
+}
+
+int trigram_get_five_element(int earthly_branch, int idx) {
+  int reverse = earthly_branch >= 0 ? 1 : -1;
+  int five_element_idx = (abs(earthly_branch) + (idx % 3) * 2 * reverse) % sizeof(EARTHLY_BRANCHES);
+  switch (five_element_idx) {
+    case 0:
+    case 11:
+      return 2;
+    case 1:
+    case 4:
+    case 7:
+    case 10:
+      return 4;
+    case 2:
+    case 3:
+      return 1;
+    case 5:
+    case 6:
+      return 3;
+    case 8:
+    case 9:
+      return 0;
+    default:
+      return -1;
+  }
+}
 
 void trigram_print(TRIGRAM trigram, char *prefix) {
   if (prefix == NULL) {
@@ -107,24 +169,6 @@ void trigram_print(TRIGRAM trigram, char *prefix) {
   printf("%s: "BYTE_TO_BINARY_PATTERN"(%6d) %12s\n", prefix, BYTE_TO_BINARY(trigram), trigram, TRIGRAM_NAMES[trigram]);
 }
 
-int trigram_get_eight_gong(TRIGRAM trigram, bool inner_trigram, int *reverse) {
-  if (reverse != NULL) {
-    *reverse = 0;
-  }
-  int half_trigram = (inner_trigram ? trigram>>3 : trigram) & 0b111;
-  char* prefix = "outer_trigram";
-  if (inner_trigram) {
-    prefix = "inner_trigram";
-  }
-  printf("%s is "BYTE_TO_BINARY_PATTERN"\n", prefix, BYTE_TO_BINARY(half_trigram));
-
-  // reverse half_trigram in bite order to get the name index.
-  int idx = 0;
-  for(int i=0;i<3;i++) {
-    // idx = (idx<<1) + half_trigram &
-  }
-  return 0;
-}
 
 int main() {
   srand(time(0));
@@ -135,8 +179,22 @@ int main() {
   TRIGRAM trigram = trigram_new(raw);
   trigram_print(trigram, "TRIGRAM ");
 
-  int x = trigram_get_eight_gong(trigram, true, NULL);
-  x = trigram_get_eight_gong(trigram, true, NULL);
+  int eight_gone_inner = trigram_get_eight_gong(trigram, true);
+  int eight_gone_outer = trigram_get_eight_gong(trigram, false);
+  printf("Eight Gong: inner: %d %s ; outer: %d %s\n", eight_gone_inner, EIGHT_GONGS[eight_gone_inner], eight_gone_outer, EIGHT_GONGS[eight_gone_outer]);
+
+  int earthly_branch_inner = trigram_get_earthly_branch(trigram, true);
+  int earthly_branch_outer = trigram_get_earthly_branch(trigram, false);
+
+  earthly_branch_inner = abs(earthly_branch_inner);
+  earthly_branch_outer = abs(earthly_branch_outer);
+  printf("Earthly Branch: inner: %d %s ; outer: %d %s\n", earthly_branch_inner, EARTHLY_BRANCHES[earthly_branch_inner], earthly_branch_outer, EARTHLY_BRANCHES[earthly_branch_outer]);
+
+  for(int i=5;i>=0;i--) {
+    int earthly_branch = i < 3 ? earthly_branch_inner : earthly_branch_outer;
+    int five_element_idx = trigram_get_five_element(earthly_branch, i);
+    printf("Five Element: %d %d %s\n", i, five_element_idx, FIVE_ELEMENTS[five_element_idx]);
+  }
 
   // RAWTRIGRAM raw_altered = rawtrigram_alter(raw);
   // rawtrigram_print(raw_altered);
