@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define DEBUG 1
+
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
   (byte & 0x20 ? '1' : '0'), \
@@ -112,18 +114,16 @@ int trigram_get_eight_gong(TRIGRAM trigram, bool inner_trigram, int *reverse) {
     *reverse = 0;
   }
   int half_trigram = (inner_trigram ? trigram>>3 : trigram) & 0b111;
+
+  #ifdef DEBUG
   char* prefix = "outer_trigram";
   if (inner_trigram) {
     prefix = "inner_trigram";
   }
-  printf("%s is "BYTE_TO_BINARY_PATTERN"\n", prefix, BYTE_TO_BINARY(half_trigram));
+  printf("%s is "BYTE_TO_BINARY_PATTERN"; %d\n", prefix, BYTE_TO_BINARY(half_trigram), half_trigram);
+  #endif
 
-  // reverse half_trigram in bite order to get the name index.
-  int idx = 0;
-  for(int i=0;i<3;i++) {
-    // idx = (idx<<1) + half_trigram &
-  }
-  return 0;
+  return half_trigram;
 }
 
 int main() {
@@ -135,8 +135,9 @@ int main() {
   TRIGRAM trigram = trigram_new(raw);
   trigram_print(trigram, "TRIGRAM ");
 
-  int x = trigram_get_eight_gong(trigram, true, NULL);
-  x = trigram_get_eight_gong(trigram, true, NULL);
+  int eight_gong_inner = trigram_get_eight_gong(trigram, true, NULL);
+  int eight_gong_outer = trigram_get_eight_gong(trigram, false, NULL);
+  printf("Eight Gong: inner %d %s, outer %d %s\n", eight_gong_inner, EIGHT_GONGS[eight_gong_inner], eight_gong_outer, EIGHT_GONGS[eight_gong_outer]);
 
   // RAWTRIGRAM raw_altered = rawtrigram_alter(raw);
   // rawtrigram_print(raw_altered);
