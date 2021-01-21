@@ -1,0 +1,93 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  (byte & 0x20 ? '1' : '0'), \
+  (byte & 0x10 ? '1' : '0'), \
+  (byte & 0x08 ? '1' : '0'), \
+  (byte & 0x04 ? '1' : '0'), \
+  (byte & 0x02 ? '1' : '0'), \
+  (byte & 0x01 ? '1' : '0')
+
+// Library of Trigram.
+// 1. roll 3 dices at the same time to generate 6 random numbers in [0,3).
+// 2. convert those 6 numbers by applying f(x)=x%2 function to a group of yao, which is a trigram (0bABCDEF).
+// 3. lookup the Five Element names by Earthly Branch of Yao (inner or outer).
+// 4. lookup the Six Relative names by Eight Gong of Trigram.
+// 5. lookup the 世爻/应爻 by Five Element of Trigram.
+#define TRIGRAM char
+#define RAWTRIGRAM short
+
+RAWTRIGRAM rolldice() {
+  printf("rolldice: ");
+  RAWTRIGRAM raw = 0;
+  for(int i=0;i<6;i++) {
+    int r = rand() % 4;
+    raw = (raw + r) << 2;
+    printf("%d ", r);
+  }
+  printf(", RAWTRIGRAM(%d)\n", raw);
+  return raw;
+}
+
+void rawtrigram_print(RAWTRIGRAM raw) {
+  printf("RAWTRIGRAM(%6d): ", raw);
+  for(int i=0;i<6;i++) {
+    printf("%d ", (raw >> ((6-i)*2) & 0x3));
+  }
+  printf("\n");
+}
+
+RAWTRIGRAM rawtrigram_alter(RAWTRIGRAM raw) {
+  RAWTRIGRAM altered = 0;
+  for(int i=0;i<6;i++) {
+    int r = (raw >> (i*2)) & 0x3;
+    if (r == 0) {
+      r = 3;
+    } else if (r == 3) {
+      r = 0;
+    }
+    altered += r << (i*2);
+  }
+  return altered;
+}
+
+TRIGRAM trigram_new(RAWTRIGRAM raw) {
+  TRIGRAM trigram = 0;
+
+  for(int i=0;i<6;i++) {
+    int r = (raw >> ((6-i)*2) & 0x3);
+    trigram = (trigram << 1) + r%2;
+  }
+
+  return trigram;
+}
+
+void trigram_print(TRIGRAM trigram, char *prefix) {
+  if (prefix == NULL) {
+    prefix = "TRIGRAM";
+  }
+  printf("%s: "BYTE_TO_BINARY_PATTERN"(%6d)\n", prefix, BYTE_TO_BINARY(trigram), trigram);
+}
+
+
+int main() {
+  srand(time(0));
+
+  RAWTRIGRAM raw = rolldice();
+  rawtrigram_print(raw);
+
+  RAWTRIGRAM raw_altered = rawtrigram_alter(raw);
+  rawtrigram_print(raw_altered);
+
+  TRIGRAM trigram = trigram_new(raw);
+  trigram_print(trigram, "TRIGRAM ");
+
+  TRIGRAM altered_trigram = trigram_new(raw_altered);
+  trigram_print(altered_trigram, "TRIGRAM_");
+
+  return 0;
+}
