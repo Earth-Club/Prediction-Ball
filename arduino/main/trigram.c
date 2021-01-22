@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define DEBUG 1
-
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
   (byte & 0x20 ? '1' : '0'), \
@@ -125,12 +123,15 @@ TRIGRAM trigram_new(RAWTRIGRAM raw) {
   return trigram;
 }
 
-
 void trigram_print(TRIGRAM trigram, char *prefix) {
   if (prefix == NULL) {
     prefix = "TRIGRAM";
   }
-  printf("%s: "BYTE_TO_BINARY_PATTERN"(%6d) %12s\n", prefix, BYTE_TO_BINARY(trigram), trigram, TRIGRAM_NAMES[trigram]);
+  printf("%s: "BYTE_TO_BINARY_PATTERN" %12s (%6d)\n", prefix, BYTE_TO_BINARY(trigram), TRIGRAM_NAMES[trigram], trigram);
+}
+
+int trigram_get_yao(TRIGRAM trigram, int idx) {
+  return (trigram >> (6-idx-1)) & 1;
 }
 
 int trigram_get_eight_gong(TRIGRAM trigram, bool inner_trigram) {
@@ -187,17 +188,99 @@ int trigram_get_earthly_branch_and_five_element(TRIGRAM trigram, int idx_of_yao)
 
   int reverse = 0;
   int base_earthly_branch_idx = trigram_get_earthly_branch_of_first_yao(eight_gong_idx, inner_trigram, &reverse);
-  int earthly_branch_idx = (base_earthly_branch_idx + (idx_of_yao%3) * 2 * reverse) % 12;
+  int earthly_branch_idx = (base_earthly_branch_idx + (idx_of_yao%3) * 2 * reverse + 12) % 12;
   #ifdef DEBUG
   printf("[DEBUG] (%d + (%d %% 3) * 2 * %d) %% sizeof(EARTHLY_BRANCHES) = %d %% 12 = %d\n", base_earthly_branch_idx, idx_of_yao, reverse, base_earthly_branch_idx + (idx_of_yao%3) * 2 * reverse, earthly_branch_idx);
   #endif
   return earthly_branch_idx;
 }
 
+TRIGRAM trigram_get_ben_gong_trigram(TRIGRAM trigram, int *idx_altered, int *eight_gong, int *shi_yao_idx, int *ying_yao_idx) {
+  if (idx_altered == NULL) {
+    int z = 0;
+    idx_altered = &z;
+  }
+  if (eight_gong == NULL) {
+    int z = 0;
+    eight_gong = &z;
+  }
+  if (shi_yao_idx == NULL) {
+    int z = 0;
+    shi_yao_idx = &z;
+  }
+  if (ying_yao_idx == NULL) {
+    int z = 0;
+    ying_yao_idx = &z;
+  }
+
+  *idx_altered = -1;
+  *eight_gong = -1;
+
+  static int masks[] = {0b0, 0b100000, 0b110000, 0b111000, 0b111100, 0b111110, 0b111010, 0b000010};
+
+  for(int i=0;i<sizeof(masks);i++) {
+    TRIGRAM ben_gong_trigram = trigram ^ masks[i];
+    switch (ben_gong_trigram) {
+      case 63:
+        *eight_gong = 7;
+        break;
+      case 36:
+        *eight_gong = 4;
+        break;
+      case 18:
+        *eight_gong = 2;
+        break;
+      case 9:
+        *eight_gong = 1;
+        break;
+      case 0:
+        *eight_gong = 0;
+        break;
+      case 27:
+        *eight_gong = 3;
+        break;
+      case 45:
+        *eight_gong = 5;
+        break;
+      case 54:
+        *eight_gong = 6;
+        break;
+      default:
+        continue;
+    }
+    *idx_altered = i;
+
+    // set idx of Shi Yao & Ying Yao.
+    int idx = 0;
+    switch (i) {
+      case 6:
+        idx = 3;
+        break;
+      case 7:
+        idx = 2;
+        break;
+      case 0:
+        idx = 5;
+        break;
+      default:
+        idx = i + 5;
+        break;
+    }
+
+    *shi_yao_idx = idx % 6;
+    *ying_yao_idx = (idx + 3) % 6;
+
+    return ben_gong_trigram;
+  }
+
+  return -1;
+}
+
 int main() {
   srand(time(0));
 
   RAWTRIGRAM raw = rolldice();
+  // RAWTRIGRAM raw = 4532;
   rawtrigram_print(raw);
 
   TRIGRAM trigram = trigram_new(raw);
@@ -220,9 +303,33 @@ int main() {
     earthly_branch_outer
   );
 
-  for(int i=0;i<6;i++) {
+  int idx_altered = 0;
+  int trigram_eight_gong = 0;
+  int shi_yao_idx = 0;
+  int ying_yao_idx = 0;
+  TRIGRAM ben_gong_trigram = trigram_get_ben_gong_trigram(trigram, &idx_altered, &trigram_eight_gong, &shi_yao_idx, &ying_yao_idx);
+  trigram_print(ben_gong_trigram, "BenGongTrigram");
+  printf("BenGongTrigram: %dth altering, EightGong: %s (%d), Shi Yao: %d, Ying Yao: %d\n", idx_altered, EIGHT_GONGS[trigram_eight_gong], trigram_eight_gong, shi_yao_idx, ying_yao_idx);
+
+  printf("\n");
+  trigram_print(trigram, "TRIGRAM ");
+  for(int i=5;i>=0;i--) {
+    int yao = trigram_get_yao(trigram, i);
     int idx = trigram_get_earthly_branch_and_five_element(trigram, i);
-    printf("%d Yao: %s%s (%d, %d)\n", i, EARTHLY_BRANCHES[idx], FIVE_ELEMENTS[earthly_branch_to_five_element(idx)], idx, earthly_branch_to_five_element(idx));
+
+    char *yao_text = "━━━━━━━";
+    if (yao == 0) {
+      yao_text = "━━━ ━━━";
+    }
+
+    char *shi_or_ying = "  ";
+    if (i == shi_yao_idx) {
+      shi_or_ying = "世";
+    } else if (i == ying_yao_idx) {
+      shi_or_ying = "应";
+    }
+
+    printf("%d_yao   : %s %s%s %s (%d, %d)\n", i+1, yao_text, EARTHLY_BRANCHES[idx], FIVE_ELEMENTS[earthly_branch_to_five_element(idx)], shi_or_ying, idx, earthly_branch_to_five_element(idx));
   }
 
 
