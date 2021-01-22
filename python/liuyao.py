@@ -638,6 +638,17 @@ def FiveElementOfEightGong(e, name=True):
 # ]
 
 
+def dump():
+    while True:
+        i = int(input("Input the value of Trigram: "))
+        trigram = Trigram([i % 2, (i >> 1) % 2, (i >> 2) %
+                           2, (i >> 3) % 2, (i >> 4) % 2, (i >> 5) % 2])
+        # print(trigram, trigram.get_earthly_branches_and_five_elements(True), "\n")
+        print(trigram, "six_relatives: ", trigram.get_six_relatives(
+            True), "inner: ", trigram.get_eight_gone_of_half_trigram(inner=True, name=True), "outer: ", trigram.get_eight_gone_of_half_trigram(inner=False, name=True))
+        print("")
+
+
 if __name__ == "__main__":
     # while True:
     #     year = input("lunar year: ")
@@ -667,10 +678,12 @@ if __name__ == "__main__":
     #         (i, ), True))
     # print(SixagenaryDay(1912, 2, 18, True))
     # print(SixagenaryDay(2021, 1, 5, True))
-    for i in range(0, 64):
-        trigram = Trigram([i % 2, (i >> 1) % 2, (i >> 2) %
-                           2, (i >> 3) % 2, (i >> 4) % 2, (i >> 5) % 2])
-        # print(trigram, trigram.get_earthly_branches_and_five_elements(True), "\n")
-        print(trigram, "six_relatives: ", trigram.get_six_relatives(True))
-        # print(trigram, trigram.get_bengonggua(True), "\n")
-    launch()
+    # for i in range(0, 64):
+    #     trigram = Trigram([i % 2, (i >> 1) % 2, (i >> 2) %
+    #                        2, (i >> 3) % 2, (i >> 4) % 2, (i >> 5) % 2])
+    #     # print(trigram, trigram.get_earthly_branches_and_five_elements(True), "\n")
+    #     print(trigram, "six_relatives: ", trigram.get_six_relatives(
+    #         True), "inner: ", trigram.get_eight_gone_of_half_trigram(inner=True, name=True), "outer: ", trigram.get_eight_gone_of_half_trigram(inner=False, name=True))
+    # print(trigram, trigram.get_bengonggua(True), "\n")
+    # launch()
+    dump()
