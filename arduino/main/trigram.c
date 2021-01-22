@@ -171,7 +171,7 @@ void trigram_print(TRIGRAM trigram, char *prefix) {
     prefix = "TRIGRAM";
   }
   printf("%s: " BYTE_TO_BINARY_PATTERN " %12s (%6d)\n", prefix,
-         BYTE_TO_BINARY(trigram), TRIGRAM_NAMES[trigram], trigram);
+         BYTE_TO_BINARY(trigram), TRIGRAM_NAMES[(int)trigram], trigram);
 }
 
 int trigram_get_yao(TRIGRAM trigram, int idx) {

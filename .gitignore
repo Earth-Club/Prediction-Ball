@@ -6,4 +6,8 @@
 
 # python files.
 *.pyc
+
+# C/C++ build files
 a.out
+trigram
+*.o
