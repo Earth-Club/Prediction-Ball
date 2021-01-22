@@ -464,6 +464,37 @@ int main() {
   // rawtrigram_print(raw_altered);
   // TRIGRAM altered_trigram = trigram_new(raw_altered);
   // trigram_print(altered_trigram, "TRIGRAM_");
+  printf("\n");
 
+  Date solar;
+  solar.year = 2021;
+  solar.month = 1;
+  solar.day = 22;
+  solar.hour = 22;
+
+  Date lunar = {0}, gan = {0}, zhi = {0}, lunar2 = {0}, gan2 = {0}, zhi2 = {0};
+  int jieAlert = 0;
+
+  Solar2Lunar(&solar, &lunar, &gan, &zhi, &lunar2, &gan2, &zhi2, &jieAlert);
+
+  printf("%s%d%s%2d%s%2d%s%2d%s%s%s\n", "阳历：　", solar.year, "年",
+         solar.month, "月", solar.day, "日", solar.hour, "时　", "星期",
+         weekdayUTF8[solar.weekday]);
+  printf("%s%d%s%s%2d%s%2d%s%s%s%s%s\n", "阴历：　", lunar.year, "年",
+         (lunar.leap ? "闰" : ""), lunar.month, "月", lunar.day, "日",
+         ZhiUTF8[zhi.hour], "时　", "生肖属", ShengXiaoUTF8_hans[zhi.year]);
+  printf("%s%s%s%s%s%s%s%s%s%s%s%s%s\n", "干支：　", GanUTF8[gan.year],
+         ZhiUTF8[zhi.year], "年　", GanUTF8[gan.month], ZhiUTF8[zhi.month],
+         "月　", GanUTF8[gan.day], ZhiUTF8[zhi.day], "日　", GanUTF8[gan.hour],
+         ZhiUTF8[zhi.hour], "时　");
+  printf("%s%s%s%s%s%s%s%s%s%s%s%s%s\n", "用四柱神算推算之时辰八字：　",
+         GanUTF8[gan2.year], ZhiUTF8[zhi2.year], "年　", GanUTF8[gan2.month],
+         ZhiUTF8[zhi2.month], "月　", GanUTF8[gan2.day], ZhiUTF8[zhi2.day],
+         "日　", GanUTF8[gan2.hour], ZhiUTF8[zhi2.hour], "时　");
+  if (jieAlert) {
+    printf("* %s, %s\n", "是日为节", "月柱可能要修改");
+    if (lunar2.month == 1) printf("* %s\n", "年柱亦可能要修改");
+    printf("* %s\n", "请查有节气时间之万年历");
+  }
   return 0;
 }
