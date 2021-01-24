@@ -1,4 +1,6 @@
 // Main.
+#include "trigram.h"
+
 #define DEBUG 1
 
 void setup() {

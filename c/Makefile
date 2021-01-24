@@ -5,7 +5,7 @@
 TARGET  := trigram
 
 #source file
-SOURCE  := trigram.c lunar-date.c main.c
+SOURCE  := main.c ../arduino/main/trigram.c ../arduino/main/lunar-date.c
 OBJS    := $(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCE)))
 
 #compile and lib parameter
@@ -13,7 +13,7 @@ CC      := clang
 LIBS    :=
 LDFLAGS :=
 DEFINES :=
-INCLUDE := -I.
+INCLUDE := -I. -I../arduino/main
 CFLAGS  := -g -Wall -O3 $(DEFINES) $(INCLUDE)
 
 .PHONY : everything objs clean veryclean build
@@ -28,7 +28,7 @@ build : veryclean everything
 
 clean :
 	-rm -rf $(TARGET)
-	-rm -rf *.o
+	-rm -rf *.o ../arduino/main/*.o
 
 $(TARGET) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LIBS)
