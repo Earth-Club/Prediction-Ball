@@ -5,7 +5,7 @@
 TARGET  := trigram
 
 #source file
-SOURCE  := trigram.c lunar-date.c
+SOURCE  := trigram.c lunar-date.c main.c
 OBJS    := $(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCE)))
 
 #compile and lib parameter
