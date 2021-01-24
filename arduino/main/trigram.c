@@ -167,13 +167,13 @@ void rawtrigram_print(RAWTRIGRAM raw) {
 RAWTRIGRAM rawtrigram_alter(RAWTRIGRAM raw) {
   RAWTRIGRAM altered = 0;
   for (int i = 0; i < 6; i++) {
-    int r = (raw >> (i * 2)) & 0x3;
+    int r = (raw >> ((i + 1) * 2)) & 0x3;
     if (r == 0) {
       r = 3;
     } else if (r == 3) {
       r = 0;
     }
-    altered += r << (i * 2);
+    altered += (r << ((i + 1) * 2));
   }
   return altered;
 }
