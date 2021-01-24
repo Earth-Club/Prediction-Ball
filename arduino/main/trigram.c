@@ -451,17 +451,69 @@ void trigram_print_ben_gong_trigram(TRIGRAM trigram) {
       five_element_of_trigram, shi_yao_idx, ying_yao_idx);
 }
 
+int format_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
+                   int ying_yao_idx, int trigram_five_element) {
+  int yao = trigram_get_yao(trigram, i);
+  int earthly_branch_of_yao = trigram_get_earthly_branch(trigram, i);
+  int five_element_of_yao =
+      earthly_branch_to_five_element(earthly_branch_of_yao);
+
+  // trigram symbol
+  char *symbol = "━━━━━━━";
+  if (yao == 0) {
+    symbol = "━━━ ━━━";
+  }
+
+  // Mark Shi Yao & Ying Yao.
+  char *shi_or_ying = "  ";
+  if (i == shi_yao_idx) {
+    shi_or_ying = "世";
+  } else if (i == ying_yao_idx) {
+    shi_or_ying = "应";
+  }
+
+  // Mark Six Relative.
+  int six_relative_of_yao = trigram_get_six_relative(
+      trigram_five_element, five_element_of_yao, NULL, NULL);
+
+// Print.
+#ifdef DEBUG
+  return sprintf(buf, "%s %s%s%s %s (%d, %d)", orig_symbol,
+                 SIX_RELATIVES[orig_six_relative_of_yao],
+                 EARTHLY_BRANCHES[orig_earthly_branch_of_yao],
+                 FIVE_ELEMENTS[orig_five_element_of_yao], orig_shi_or_ying,
+                 orig_earthly_branch_of_yao, orig_five_element_of_yao);
+#else
+  return sprintf(buf, "%s%s%s %s %s", SIX_RELATIVES[six_relative_of_yao],
+                 EARTHLY_BRANCHES[earthly_branch_of_yao],
+                 FIVE_ELEMENTS[five_element_of_yao], symbol, shi_or_ying);
+#endif
+}
+
 int main() {
   srand(time(0));
 
   RAWTRIGRAM raw = rolldice();
   // RAWTRIGRAM raw = 1952;
-  rawtrigram_print(raw);
 
+  printf("======================\n");
+
+  rawtrigram_print(raw);
   TRIGRAM trigram = trigram_new(raw);
   trigram_print(trigram, "TRIGRAM ");
   trigram_print_eight_gong(trigram);
   trigram_print_ben_gong_trigram(trigram);
+
+  printf("======================\n");
+
+  RAWTRIGRAM alterraw = rawtrigram_alter(raw);
+  rawtrigram_print(alterraw);
+  TRIGRAM altered_trigram = trigram_new(alterraw);
+  trigram_print(altered_trigram, "TRIGALTER ");
+  trigram_print_eight_gong(altered_trigram);
+  trigram_print_ben_gong_trigram(altered_trigram);
+
+  printf("======================\n");
 
   // RAWTRIGRAM raw_altered = rawtrigram_alter(raw);
   // rawtrigram_print(raw_altered);
@@ -505,6 +557,7 @@ int main() {
     if (lunar2.month == 1) printf("* %s\n", "年柱亦可能要修改");
     printf("* %s\n", "请查有节气时间之万年历");
   }
+  printf("\n");
 
   // six god.
   int six_god_of_first_yao = sixagenary_day_to_six_god(zhi.day);
@@ -518,56 +571,40 @@ int main() {
   int orig_trigram_five_element =
       eight_gong_to_five_element(orig_trigram_eight_gong);
 
+  // Altered Trigram.
+  int altered_shi_yao_idx = 0;
+  int altered_ying_yao_idx = 0;
+  int altered_trigram_eight_gong = 0;
+  trigram_get_ben_gong_trigram(altered_trigram, NULL,
+                               &altered_trigram_eight_gong,
+                               &altered_shi_yao_idx, &altered_ying_yao_idx);
+  int altered_trigram_five_element =
+      eight_gong_to_five_element(altered_trigram_eight_gong);
+
   printf("      六神        本      卦              变      卦\n");
-  printf("                  %s(%2d)\n", TRIGRAM_NAMES[(int)trigram],
-         (int)trigram);
+  printf("                  %s(%2d)            %s(%2d)\n",
+         TRIGRAM_NAMES[(int)trigram], (int)trigram,
+         TRIGRAM_NAMES[(int)altered_trigram], (int)altered_trigram);
 
   // alter trigram.
 
   for (int i = 5; i >= 0; i--) {
-    int orig_yao = trigram_get_yao(trigram, i);
-    int orig_earthly_branch_of_yao = trigram_get_earthly_branch(trigram, i);
-    int orig_five_element_of_yao =
-        earthly_branch_to_five_element(orig_earthly_branch_of_yao);
-
     // name of yao.
     char *yao_name = YAO_NAMES[i];
-
-    // trigram symbol
-    char *orig_symbol = "━━━━━━━";
-    if (orig_yao == 0) {
-      orig_symbol = "━━━ ━━━";
-    }
-
-    // Mark Shi Yao & Ying Yao.
-    char *orig_shi_or_ying = "  ";
-    if (i == orig_shi_yao_idx) {
-      orig_shi_or_ying = "世";
-    } else if (i == orig_ying_yao_idx) {
-      orig_shi_or_ying = "应";
-    }
-
-    // Mark Six Relative.
-    int orig_six_relative_of_yao = trigram_get_six_relative(
-        orig_trigram_five_element, orig_five_element_of_yao, NULL, NULL);
 
     // Six God.
     char *six_god = SIX_GODS[(six_god_of_first_yao + i) % 6];
 
-// Print.
-#ifdef DEBUG
-    printf("%s爻: %s     %s %s%s%s %s (%d, %d)\n", yao_name, six_god,
-           orig_symbol, SIX_RELATIVES[orig_six_relative_of_yao],
-           EARTHLY_BRANCHES[orig_earthly_branch_of_yao],
-           FIVE_ELEMENTS[orig_five_element_of_yao], orig_shi_or_ying,
-           orig_earthly_branch_of_yao, orig_five_element_of_yao);
-#else
-    printf("%s爻: %s     %s%s%s %s %s\n", yao_name, six_god,
-           SIX_RELATIVES[orig_six_relative_of_yao],
-           EARTHLY_BRANCHES[orig_earthly_branch_of_yao],
-           FIVE_ELEMENTS[orig_five_element_of_yao], orig_symbol,
-           orig_shi_or_ying);
-#endif
+    char trigram_str[64] = {0};
+    format_trigram(trigram_str, trigram, i, orig_shi_yao_idx, orig_ying_yao_idx,
+                   orig_trigram_five_element);
+
+    char altered_trigram_str[64] = {0};
+    format_trigram(altered_trigram_str, altered_trigram, i, altered_shi_yao_idx,
+                   altered_ying_yao_idx, altered_trigram_five_element);
+
+    printf("%s爻: %s     %s     %s\n", yao_name, six_god, trigram_str,
+           altered_trigram_str);
   }
 
   return 0;
