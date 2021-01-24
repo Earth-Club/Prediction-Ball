@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "lunar-date.h"
@@ -11,8 +12,14 @@
       (byte & 0x08 ? '1' : '0'), (byte & 0x04 ? '1' : '0'), \
       (byte & 0x02 ? '1' : '0'), (byte & 0x01 ? '1' : '0')
 
+#ifdef LUNAR_DATE_H
+#define EARTHLY_BRANCHES ZhiUTF8
+#else
 static char *EARTHLY_BRANCHES[] = {"子", "丑", "寅", "卯", "辰", "巳",
                                    "午", "未", "申", "酉", "戌", "亥"};
+#endif
+
+static char *YAO_NAMES[] = {"初", "二", "三", "四", "五", "上"};
 
 static char *TRIGRAM_NAMES[] = {
     "坤为地",   "山地剥",   "水地比", "风地观",   "雷地豫",   "火地晋",
@@ -170,8 +177,14 @@ void trigram_print(TRIGRAM trigram, char *prefix) {
   if (prefix == NULL) {
     prefix = "TRIGRAM";
   }
-  printf("%s: " BYTE_TO_BINARY_PATTERN " %12s (%6d)\n", prefix,
-         BYTE_TO_BINARY(trigram), TRIGRAM_NAMES[(int)trigram], trigram);
+  char *name = TRIGRAM_NAMES[(int)trigram];
+  if (strlen(name) == 12) {
+    printf("%s: " BYTE_TO_BINARY_PATTERN "  %s    (%4d)\n", prefix,
+           BYTE_TO_BINARY(trigram), name, trigram);
+  } else {
+    printf("%s: " BYTE_TO_BINARY_PATTERN "    %s    (%4d)\n", prefix,
+           BYTE_TO_BINARY(trigram), name, trigram);
+  }
 }
 
 int trigram_get_yao(TRIGRAM trigram, int idx) {
@@ -427,13 +440,58 @@ int main() {
       FIVE_ELEMENTS[five_element_of_trigram], trigram_eight_gong,
       five_element_of_trigram, shi_yao_idx, ying_yao_idx);
 
+  // RAWTRIGRAM raw_altered = rawtrigram_alter(raw);
+  // rawtrigram_print(raw_altered);
+  // TRIGRAM altered_trigram = trigram_new(raw_altered);
+  // trigram_print(altered_trigram, "TRIGRAM_");
   printf("\n");
-  trigram_print(trigram, "TRIGRAM ");
+
+  time_t now = time(NULL);
+  // printf("%s", ctime(&now));
+
+  struct tm *nowtm = localtime(&now);
+
+  Date solar;
+  solar.year = nowtm->tm_year + 1900;
+  solar.month = nowtm->tm_mon + 1;
+  solar.day = nowtm->tm_mday;
+  solar.hour = nowtm->tm_hour;
+
+  Date lunar = {0}, gan = {0}, zhi = {0}, lunar2 = {0}, gan2 = {0}, zhi2 = {0};
+  int jieAlert = 0;
+
+  Solar2Lunar(&solar, &lunar, &gan, &zhi, &lunar2, &gan2, &zhi2, &jieAlert);
+
+  printf("%s%d%s%2d%s%2d%s%2d%s%s%s\n", "阳历    ：", solar.year, "年",
+         solar.month, "月", solar.day, "日", solar.hour, "时　", "星期",
+         weekdayUTF8[solar.weekday]);
+  printf("%s%d%s%s%2d%s%2d%s%s%s%s%s\n", "阴历    ：", lunar.year, "年",
+         (lunar.leap ? "闰" : ""), lunar.month, "月", lunar.day, "日",
+         ZhiUTF8[zhi.hour], "时　", "生肖属", ShengXiaoUTF8_hans[zhi.year]);
+  printf("%s%s%s%s%s%s%s%s%s%s%s%s%s\n", "干支    ：", GanUTF8[gan.year],
+         ZhiUTF8[zhi.year], "年　", GanUTF8[gan.month], ZhiUTF8[zhi.month],
+         "月　", GanUTF8[gan.day], ZhiUTF8[zhi.day], "日　", GanUTF8[gan.hour],
+         ZhiUTF8[zhi.hour], "时　");
+  printf("%s%s%s%s%s%s%s%s%s%s%s%s%s\n", "四柱神算：", GanUTF8[gan2.year],
+         ZhiUTF8[zhi2.year], "年　", GanUTF8[gan2.month], ZhiUTF8[zhi2.month],
+         "月　", GanUTF8[gan2.day], ZhiUTF8[zhi2.day], "日　",
+         GanUTF8[gan2.hour], ZhiUTF8[zhi2.hour],
+         "时　(用四柱神算推算之时辰八字)");
+  if (jieAlert) {
+    printf("* %s, %s\n", "是日为节", "月柱可能要修改");
+    if (lunar2.month == 1) printf("* %s\n", "年柱亦可能要修改");
+    printf("* %s\n", "请查有节气时间之万年历");
+  }
+
+  trigram_print(trigram, "\nTRIGRAM ");
   for (int i = 5; i >= 0; i--) {
     int yao = trigram_get_yao(trigram, i);
     int earthly_branch_of_yao = trigram_get_earthly_branch(trigram, i);
     int five_element_of_yao =
         earthly_branch_to_five_element(earthly_branch_of_yao);
+
+    // name of yao.
+    char *yao_name = YAO_NAMES[i];
 
     // trigram symbol
     char *symbol = "━━━━━━━";
@@ -453,48 +511,12 @@ int main() {
     int six_relative_of_yao = trigram_get_six_relative(
         five_element_of_trigram, five_element_of_yao, NULL, NULL);
 
-    printf("%d_yao   : %s %s%s%s %s (%d, %d)\n", i + 1, symbol,
+    printf("%s爻    : %s %s%s%s %s (%d, %d)\n", yao_name, symbol,
            SIX_RELATIVES[six_relative_of_yao],
            EARTHLY_BRANCHES[earthly_branch_of_yao],
            FIVE_ELEMENTS[five_element_of_yao], shi_or_ying,
            earthly_branch_of_yao, five_element_of_yao);
   }
 
-  // RAWTRIGRAM raw_altered = rawtrigram_alter(raw);
-  // rawtrigram_print(raw_altered);
-  // TRIGRAM altered_trigram = trigram_new(raw_altered);
-  // trigram_print(altered_trigram, "TRIGRAM_");
-  printf("\n");
-
-  Date solar;
-  solar.year = 2021;
-  solar.month = 1;
-  solar.day = 22;
-  solar.hour = 22;
-
-  Date lunar = {0}, gan = {0}, zhi = {0}, lunar2 = {0}, gan2 = {0}, zhi2 = {0};
-  int jieAlert = 0;
-
-  Solar2Lunar(&solar, &lunar, &gan, &zhi, &lunar2, &gan2, &zhi2, &jieAlert);
-
-  printf("%s%d%s%2d%s%2d%s%2d%s%s%s\n", "阳历：　", solar.year, "年",
-         solar.month, "月", solar.day, "日", solar.hour, "时　", "星期",
-         weekdayUTF8[solar.weekday]);
-  printf("%s%d%s%s%2d%s%2d%s%s%s%s%s\n", "阴历：　", lunar.year, "年",
-         (lunar.leap ? "闰" : ""), lunar.month, "月", lunar.day, "日",
-         ZhiUTF8[zhi.hour], "时　", "生肖属", ShengXiaoUTF8_hans[zhi.year]);
-  printf("%s%s%s%s%s%s%s%s%s%s%s%s%s\n", "干支：　", GanUTF8[gan.year],
-         ZhiUTF8[zhi.year], "年　", GanUTF8[gan.month], ZhiUTF8[zhi.month],
-         "月　", GanUTF8[gan.day], ZhiUTF8[zhi.day], "日　", GanUTF8[gan.hour],
-         ZhiUTF8[zhi.hour], "时　");
-  printf("%s%s%s%s%s%s%s%s%s%s%s%s%s\n", "用四柱神算推算之时辰八字：　",
-         GanUTF8[gan2.year], ZhiUTF8[zhi2.year], "年　", GanUTF8[gan2.month],
-         ZhiUTF8[zhi2.month], "月　", GanUTF8[gan2.day], ZhiUTF8[zhi2.day],
-         "日　", GanUTF8[gan2.hour], ZhiUTF8[zhi2.hour], "时　");
-  if (jieAlert) {
-    printf("* %s, %s\n", "是日为节", "月柱可能要修改");
-    if (lunar2.month == 1) printf("* %s\n", "年柱亦可能要修改");
-    printf("* %s\n", "请查有节气时间之万年历");
-  }
   return 0;
 }
