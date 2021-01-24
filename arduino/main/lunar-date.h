@@ -6,8 +6,6 @@ typedef struct {
   int leap; /* the lunar month is a leap month */
 } Date;
 
-typedef char byte;
-
 #include "tables.h"
 
 static char *Gan[] = {"Jia3", "Yi3",   "Bing3", "Ding1", "Wu4",

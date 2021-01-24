@@ -1,7 +1,5 @@
 // Main.
-
 #define DEBUG 1
-
 
 void setup() {
   // enable console.
