@@ -23,17 +23,14 @@ void setup() {
 void loop() {
   u8g2.clearBuffer();
 
-  u8g2.setFont(u8g2_font_ncenB14_tr);
-  u8g2.setCursor(0, 10);
-  u8g2.print("Hello World!");
+  u8g2.firstPage();
+  do {
+    u8g2.setFont(u8g2_font_nokiafc22_tr);
+    u8g2.drawUTF8(0, 20, "abc ABC");
 
-  u8g2.setFont(u8g2_font_wqy12_t_chinese4);
-  u8g2.setCursor(0, 30);
-  u8g2.print("庚子年　己丑月　壬申日　辛亥时");
-
-  u8g2.setFont(u8g2_font_ncenB14_tr);
-  u8g2.setCursor(0, 50);
-  u8g2.print("Hello Moto!");
+    u8g2.setFont(u8g2_font_wqy9_t_chinese4);
+    u8g2.drawUTF8(0, 40, "妻财戌土官鬼申金世应");
+  } while (u8g2.nextPage());
 
   u8g2.sendBuffer();
   delay(1000);
