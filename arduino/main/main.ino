@@ -224,6 +224,8 @@ void explainTrigramView() {
     int deltaY = CHINESE_CHAR_HEIGHT + LINE_HEIGHT*2;
     int lineIdx = 0;
 
+    char buf[52] = {0};
+    
     // trigram.
     for (int i = 6; i >= 0; i--) {
       if (lineIdx < scrollToIdx) {
@@ -231,8 +233,7 @@ void explainTrigramView() {
         continue;
       }
       lineIdx++;
-      
-      char buf[48] = {0};
+
       if (i == 6) {
         sprintf(buf, "  本卦 %d", (int)trigram); // TRIGRAM_NAMES[(int)trigram]);
       } else {
@@ -261,7 +262,6 @@ void explainTrigramView() {
       }
       lineIdx++;
       
-      char buf[48] = {0};
       if (i == 6) {
         sprintf(buf, "  变卦 %d", altered_trigram); // TRIGRAM_NAMES[(int)altered_trigram]);
       } else {
