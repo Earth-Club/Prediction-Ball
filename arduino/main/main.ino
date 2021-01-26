@@ -72,7 +72,7 @@ void landingView() {
   } while (u8g2.nextPage());
 
   // wait for 1s then go to algorithmSelectingView.
-  if (wait(1000, viewHasChanged())) {
+  if (wait(1000)) {
     // navigate to algorithmSelectingView.
     navigateTo(algorithmSelectingView);
   }
@@ -80,6 +80,31 @@ void landingView() {
 
 // 2nd view.
 void algorithmSelectingView() {
+  // automatically select option.
+  static int autoSelectionStatus = 0;
+  static int optionColor[2] = {1, 0};
+
+  if (wait(1000)) {
+    autoSelectionStatus++;
+  }
+    
+  if (autoSelectionStatus > 5) {
+    autoSelectionStatus = 0;
+    navigateTo(trigramView);
+    return;
+  }
+
+  switch (autoSelectionStatus % 2) {
+    case 0:
+      optionColor[0] = 1;
+      optionColor[1] = 0;
+      break;
+    case 1:
+      optionColor[0] = 0;
+      optionColor[1] = 1;
+      break;
+  }
+  
   // display "Please choose your method:".
   u8g2.firstPage();
   do {
@@ -93,26 +118,46 @@ void algorithmSelectingView() {
     posY += LINE_HEIGHT * 2 + 8;
 
     // Option: Yes/No.
+    int boxColor = optionColor[0];
+    int textColor = (boxColor + 1) % 2;
+    u8g2.setColorIndex(boxColor);
+    
     int boxWidth = ENGLISH_CHAR_WIDTH * 6;
     int boxHeight = ENGLISH_CHAR_HEIGHT * 2;
     u8g2.drawBox(posX, posY, boxWidth, boxHeight);
-    u8g2.setColorIndex(0);
+    
+    u8g2.setColorIndex(textColor);
+    u8g2.setFont(FONT_EN);
     u8g2.drawUTF8(posX + ENGLISH_CHAR_WIDTH / 2, posY + boxHeight - ENGLISH_CHAR_HEIGHT / 2, "Yes/No");
     // restore color.
     u8g2.setColorIndex(1);
     
     // Option: 六爻
+    boxColor = optionColor[1];
+    textColor = (boxColor + 1) % 2;
+    u8g2.setColorIndex(boxColor);
+    
     posX += boxWidth + 8;
     u8g2.drawBox(posX, posY, boxWidth, boxHeight);
-    u8g2.setColorIndex(0);
+    
+    u8g2.setColorIndex(textColor);
     u8g2.setFont(FONT_CN);
     u8g2.drawUTF8(posX + (boxWidth - 2 * CHINESE_CHAR_WIDTH) / 2 - 2, posY + boxHeight - CHINESE_CHAR_HEIGHT / 2, "六爻");
+
     // restore color.
     u8g2.setColorIndex(1);
-    
-  } while (u8g2.nextPage()); 
+  } while (u8g2.nextPage());
 }
 
+void trigramView() {
+  u8g2.firstPage();
+  do {
+    int posX = 0;
+    int posY = ENGLISH_CHAR_HEIGHT;
+    u8g2.setFont(FONT_EN);
+    u8g2.drawUTF8(posX, posY, "rolling a dice");
+  } while (u8g2.nextPage());
+}
 
 void loadingAnimation() {
   loadingAnimationPageIndex = (loadingAnimationPageIndex+1) % 2;
@@ -149,13 +194,15 @@ bool viewHasChanged() {
   return gViewHasChanged;
 }
 
-bool wait(int ms, bool reset) {
+bool wait(int ms) {
   static unsigned long enteringTime = 0;
-  if (enteringTime == 0 || reset) {
+  if (enteringTime == 0) {
     enteringTime = millis();
   } else {
     unsigned long now = millis();
     if ((now - enteringTime) > ms) {
+      // reset.
+      enteringTime = 0;
       return true;
     }
   }
