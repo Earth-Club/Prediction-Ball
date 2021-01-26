@@ -8,6 +8,8 @@
 #include <Wire.h>
 #endif
 
+#include <time.h>
+
 #include "trigram.h"
 #include "animation.h"
 
@@ -21,7 +23,7 @@
 #define ENGLISH_CHAR_WIDTH 7
 
 #define FONT_CN u8g2_font_wqy9_t_chinese4
-#define CHINESE_CHAR_HEIGHT 7
+#define CHINESE_CHAR_HEIGHT 9
 #define CHINESE_CHAR_WIDTH 9
 
 // view function handler.
@@ -142,7 +144,7 @@ void algorithmSelectingView() {
     
     u8g2.setColorIndex(textColor);
     u8g2.setFont(FONT_CN);
-    u8g2.drawUTF8(posX + (boxWidth - 2 * CHINESE_CHAR_WIDTH) / 2 - 2, posY + boxHeight - CHINESE_CHAR_HEIGHT / 2, "六爻");
+    u8g2.drawUTF8(posX + (boxWidth - 2 * CHINESE_CHAR_WIDTH) / 2 - 2, posY + boxHeight - CHINESE_CHAR_HEIGHT / 2 + 2, "六爻");
 
     // restore color.
     u8g2.setColorIndex(1);
@@ -150,28 +152,88 @@ void algorithmSelectingView() {
 }
 
 void trigramView() {
+  // show loading animation.
+  if (wait(2000)) {
+    navigateTo(explainTrigramView);
+  }
+  loadingAnimation();
+}
+
+
+int format_my_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
+                   int ying_yao_idx, int trigram_five_element);
+                   
+void explainTrigramView() {
+  static RAWTRIGRAM raw = -1;
+  static TRIGRAM trigram = 0;
+    
+  if (viewHasChanged()) {
+    // roll dice.
+    raw = rolldice();
+    trigram = trigram_new(raw);
+  }
+
+    // Trigram.
+  int orig_shi_yao_idx = 0;
+  int orig_ying_yao_idx = 0;
+  int orig_trigram_eight_gong = 0;
+  trigram_get_ben_gong_trigram(trigram, NULL, &orig_trigram_eight_gong,
+                               &orig_shi_yao_idx, &orig_ying_yao_idx);
+  int orig_trigram_five_element =
+      eight_gong_to_five_element(orig_trigram_eight_gong);
+
+  
   u8g2.firstPage();
   do {
-    int posX = 0;
-    int posY = ENGLISH_CHAR_HEIGHT;
-    u8g2.setFont(FONT_EN);
-    u8g2.drawUTF8(posX, posY, "rolling a dice");
+    int posX = 4;
+    int posY = CHINESE_CHAR_HEIGHT + 2;
+    u8g2.setFont(FONT_CN);
+
+    for (int i = 5; i >= 0; i--) {
+      char buf[48] = {0};
+      format_my_trigram(buf, trigram, i, orig_shi_yao_idx, orig_ying_yao_idx,
+                   orig_trigram_five_element);
+      u8g2.drawUTF8(posX, posY, buf);
+      posY += CHINESE_CHAR_HEIGHT + LINE_HEIGHT*2;
+    }
   } while (u8g2.nextPage());
 }
 
+int format_my_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
+                   int ying_yao_idx, int trigram_five_element) {
+  int yao = trigram_get_yao(trigram, i);
+  int earthly_branch_of_yao = trigram_get_earthly_branch(trigram, i);
+  int five_element_of_yao =
+      earthly_branch_to_five_element(earthly_branch_of_yao);
+
+  // trigram symbol
+  char *symbol = "━━━";
+  if (yao == 0) {
+    symbol = "━ ━";
+  }
+
+  // Mark Shi Yao & Ying Yao.
+  char *shi_or_ying = "  ";
+  if (i == shi_yao_idx) {
+    shi_or_ying = "世";
+  } else if (i == ying_yao_idx) {
+    shi_or_ying = "应";
+  }
+
+  // Mark Six Relative.
+  int six_relative_of_yao = trigram_get_six_relative(
+      trigram_five_element, five_element_of_yao, NULL, NULL);
+
+  return sprintf(buf, "%s%s%s %s%s", SIX_RELATIVES[six_relative_of_yao],
+                 EARTHLY_BRANCHES[earthly_branch_of_yao],
+                 FIVE_ELEMENTS[five_element_of_yao], symbol, shi_or_ying);
+
+}
 void loadingAnimation() {
   loadingAnimationPageIndex = (loadingAnimationPageIndex+1) % 2;
 
   u8g2.firstPage();
   do {
-//    u8g2.setFont(u8g2_font_nokiafc22_tr);
-//    u8g2.drawUTF8(0, 20, "abc ABC");
-//    u8g2.drawUTF8(0, 20, msg);
-//
-//    u8g2.setFont(u8g2_font_wqy9_t_chinese4);
-//    u8g2.drawUTF8(0, 40, "妻财戌土官鬼申金世应");
-//    u8g2.drawXBMP(0, 0, SHUT_MOUTH_WIDTH, SHUT_MOUTH_HEIGHT, SHUT_MOUTH_DATA);
-
       if (loadingAnimationPageIndex == 0) {
         u8g2.drawXBMP(0, 0, OPEN_MOUTH_WIDTH, OPEN_MOUTH_HEIGHT, OPEN_MOUTH_DATA);
       } else {

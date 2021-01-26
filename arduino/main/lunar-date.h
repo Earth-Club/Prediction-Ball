@@ -1,6 +1,10 @@
 #ifndef LUNAR_DATE_H
 #define LUNAR_DATE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
   int year, month, day, hour, weekday;
   int leap; /* the lunar month is a leap month */
@@ -37,5 +41,9 @@ static char *weekdayUTF8[] = {"日", "一", "二", "三", "四", "五", "六"};
 
 void Solar2Lunar(Date *solar, Date *lunar, Date *gan, Date *zhi, Date *lunar2,
                  Date *gan2, Date *zhi2, int *jieAlert);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

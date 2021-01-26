@@ -1,6 +1,10 @@
 #ifndef TRIGRAM_H
 #define TRIGRAM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 
 #include "lunar-date.h"
@@ -46,12 +50,6 @@ static char *SIX_RELATIVES[] = {"父母", "兄弟", "子孙", "妻财", "官鬼"
 // Earth”，都是土，但戊是勾陈，己是腾蛇属火。 from
 // https://en.wikipedia.org/wiki/Sexagenary_cycle
 static char *SIX_GODS[] = {"青龙", "朱雀", "勾陈", "螣蛇", "白虎", "玄武"};
-
-#ifdef LUNAR_DATE_H
-#define EARTHLY_BRANCHES ZhiUTF8
-#else
-static char *EARTHLY_BRANCHES[];
-#endif
 
 int eight_gong_to_five_element(int idx);
 
@@ -114,5 +112,9 @@ void trigram_print_ben_gong_trigram(TRIGRAM trigram);
 
 int format_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
                    int ying_yao_idx, int trigram_five_element);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // TRIGRAM_H

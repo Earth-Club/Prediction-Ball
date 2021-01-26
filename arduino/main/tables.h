@@ -22,6 +22,14 @@
 /*
  * tables.h: contains tables and parameters for lunar.c
  */
+
+#ifndef TABLES_H
+#define TABLES_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define Cyear 1900 /* Note that LC1900.1.1 is SC1900.1.31 */
 #define Nyear 150  /* number of years covered by the table */
 #define Nmonth 13  /* maximum number of months in a lunar year */
@@ -256,3 +264,9 @@ static char fest[Nyear][12] = {
     {4, 5, 4, 5, 5, 6, 7, 7, 7, 7, 6, 5}, /* 2048 */
     {3, 5, 4, 5, 5, 6, 7, 7, 8, 7, 7, 5}  /* 2049 */
 };
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif  // TABLES_H
