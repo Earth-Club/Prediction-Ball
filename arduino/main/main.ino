@@ -29,7 +29,7 @@
 // view function handler.
 typedef void (*ViewHandler)();
 static ViewHandler gViewHandler = NULL;
-static bool gViewHasChanged = false;
+static bool gViewHasChanged = true;
 
 // U8G2
 U8G2_ST7567_ENH_DG128064_F_4W_SW_SPI u8g2(U8G2_MIRROR, /* SCK clock=*/ 6, /* SCL data=*/ 8, /* cs=*/ 1, /* A0 dc=*/ 3, /* RST=*/ 5);  // Pax Instruments Shield, LCD_BL=6
@@ -38,6 +38,9 @@ U8G2_ST7567_ENH_DG128064_F_4W_SW_SPI u8g2(U8G2_MIRROR, /* SCK clock=*/ 6, /* SCL
 byte loadingAnimationPageIndex = 0;
 
 void setup() {
+  // random.
+  srand(analogRead(A3));
+  
   // init u8g2.
   u8g2.begin();
   u8g2.enableUTF8Print();    // enable UTF8 support for the Arduino print() function
@@ -46,14 +49,12 @@ void setup() {
 
 void loop() {
   u8g2.clearBuffer();
-
+  
   if (gViewHandler == NULL) {
-    gViewHandler = landingView;
+    navigateTo(landingView);
   }
 
-  gViewHandler();
-  
-  gViewHasChanged = false;
+  navigateToInternal();
   
   u8g2.sendBuffer();
   delay(100);
@@ -164,16 +165,29 @@ int format_my_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
                    int ying_yao_idx, int trigram_five_element);
                    
 void explainTrigramView() {
-  static RAWTRIGRAM raw = -1;
+  static int scrollTo = 0;
   static TRIGRAM trigram = 0;
-    
+  static TRIGRAM altered_trigram = 0;
+
+  const int maxLinePerPage = 5;
+
   if (viewHasChanged()) {
+    // reset.
+    scrollTo = 0;
+    
     // roll dice.
-    raw = rolldice();
+    RAWTRIGRAM raw = rolldice();
+    RAWTRIGRAM alterraw = rawtrigram_alter(raw);
+
     trigram = trigram_new(raw);
+    altered_trigram = trigram_new(alterraw);
+  }
+  
+  if (wait(1500)) {
+    scrollTo = (scrollTo + 1) % 16;
   }
 
-    // Trigram.
+  // Trigram.
   int orig_shi_yao_idx = 0;
   int orig_ying_yao_idx = 0;
   int orig_trigram_eight_gong = 0;
@@ -182,21 +196,74 @@ void explainTrigramView() {
   int orig_trigram_five_element =
       eight_gong_to_five_element(orig_trigram_eight_gong);
 
-  
-  u8g2.firstPage();
-  do {
-    int posX = 4;
-    int posY = CHINESE_CHAR_HEIGHT + 2;
-    u8g2.setFont(FONT_CN);
+  // Altered Trigram.
+  int altered_shi_yao_idx = 0;
+  int altered_ying_yao_idx = 0;
+  int altered_trigram_eight_gong = 0;
+  trigram_get_ben_gong_trigram(altered_trigram, NULL,
+                               &altered_trigram_eight_gong,
+                               &altered_shi_yao_idx, &altered_ying_yao_idx);
+  int altered_trigram_five_element =
+      eight_gong_to_five_element(altered_trigram_eight_gong);
 
-    for (int i = 5; i >= 0; i--) {
+  u8g2.setFont(FONT_CN);
+  u8g2.firstPage();
+  
+  do {  
+    int posX = 8;
+    int posY = CHINESE_CHAR_HEIGHT + 2;
+    int deltaY = CHINESE_CHAR_HEIGHT + LINE_HEIGHT*2;
+    int lineIdx = 0;
+
+    // trigram.
+    for (int i = 6; i >= 0; i--) {
+      if (lineIdx < scrollTo) {
+        lineIdx++;
+        continue;
+      }
+      lineIdx++;
+      
       char buf[48] = {0};
-      format_my_trigram(buf, trigram, i, orig_shi_yao_idx, orig_ying_yao_idx,
+      if (i == 6) {
+        sprintf(buf, "  本卦 %d", (int)trigram); // TRIGRAM_NAMES[(int)trigram]);
+      } else {
+        format_my_trigram(buf, trigram, i, orig_shi_yao_idx, orig_ying_yao_idx,
                    orig_trigram_five_element);
+      }
       u8g2.drawUTF8(posX, posY, buf);
-      posY += CHINESE_CHAR_HEIGHT + LINE_HEIGHT*2;
+      posY += deltaY;
+    }
+
+    // 2 blank line.
+    for (int i = 0; i < 1; i++) {
+      if (lineIdx < scrollTo) {
+        lineIdx++;
+        continue;
+      }
+      lineIdx++;
+      posY += deltaY;
+    }
+
+    // altered trigram.
+    for (int i = 6; i >= 0; i--) {
+      if (lineIdx < scrollTo) {
+        lineIdx++;
+        continue;
+      }
+      lineIdx++;
+      
+      char buf[48] = {0};
+      if (i == 6) {
+        sprintf(buf, "  变卦 %d", altered_trigram); // TRIGRAM_NAMES[(int)altered_trigram]);
+      } else {
+        format_my_trigram(buf, altered_trigram, i, altered_shi_yao_idx,
+                   altered_ying_yao_idx, altered_trigram_five_element);
+      }
+      u8g2.drawUTF8(posX, posY, buf);
+      posY += deltaY;
     }
   } while (u8g2.nextPage());
+
 }
 
 int format_my_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
@@ -242,14 +309,22 @@ void loadingAnimation() {
   } while (u8g2.nextPage());
 }
 
+void navigateToInternal() {
+  bool shouldReset = gViewHasChanged;
+  
+  gViewHandler();
+  
+  if (shouldReset) {
+    gViewHasChanged = false;
+  }
+}
+
 void navigateTo(ViewHandler view) {
   if (view == NULL) {
     view = landingView;
   }
-  if (view != gViewHandler) {
-    gViewHasChanged = true;
-    gViewHandler = view;
-  }
+  gViewHasChanged = true;
+  gViewHandler = view;
 }
 
 bool viewHasChanged() {
