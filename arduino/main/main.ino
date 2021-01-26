@@ -87,11 +87,11 @@ void algorithmSelectingView() {
   static int autoSelectionStatus = 0;
   static int optionColor[2] = {1, 0};
 
-  if (wait(1000)) {
+  if (wait(600)) {
     autoSelectionStatus++;
   }
     
-  if (autoSelectionStatus > 5) {
+  if (autoSelectionStatus > 3) {
     autoSelectionStatus = 0;
     navigateTo(trigramView);
     return;
@@ -170,6 +170,7 @@ void explainTrigramView() {
   static TRIGRAM altered_trigram = 0;
 
   const int maxLinePerPage = 5;
+  const int scrollCycle = 16;
 
   if (viewHasChanged()) {
     // reset.
@@ -183,10 +184,16 @@ void explainTrigramView() {
     altered_trigram = trigram_new(alterraw);
   }
   
-  if (wait(1500)) {
-    scrollTo = (scrollTo + 1) % 16;
+  if (wait(1000)) {
+    scrollTo++;
   }
 
+  if (scrollTo >= scrollCycle*2) {
+    // go back to landing view.
+    navigateTo(landingView);
+    return;
+  }
+  
   // Trigram.
   int orig_shi_yao_idx = 0;
   int orig_ying_yao_idx = 0;
@@ -208,6 +215,8 @@ void explainTrigramView() {
 
   u8g2.setFont(FONT_CN);
   u8g2.firstPage();
+
+  int scrollToIdx = scrollTo % scrollCycle;
   
   do {  
     int posX = 8;
@@ -217,7 +226,7 @@ void explainTrigramView() {
 
     // trigram.
     for (int i = 6; i >= 0; i--) {
-      if (lineIdx < scrollTo) {
+      if (lineIdx < scrollToIdx) {
         lineIdx++;
         continue;
       }
@@ -234,9 +243,9 @@ void explainTrigramView() {
       posY += deltaY;
     }
 
-    // 2 blank line.
+    // 1 blank line.
     for (int i = 0; i < 1; i++) {
-      if (lineIdx < scrollTo) {
+      if (lineIdx < scrollToIdx) {
         lineIdx++;
         continue;
       }
@@ -246,7 +255,7 @@ void explainTrigramView() {
 
     // altered trigram.
     for (int i = 6; i >= 0; i--) {
-      if (lineIdx < scrollTo) {
+      if (lineIdx < scrollToIdx) {
         lineIdx++;
         continue;
       }
