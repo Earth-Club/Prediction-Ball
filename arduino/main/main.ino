@@ -10,8 +10,8 @@
 
 #include <time.h>
 
-#include "trigram.h"
 #include "animation.h"
+#include "trigram.h"
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -32,7 +32,9 @@ static ViewHandler gViewHandler = NULL;
 static bool gViewHasChanged = true;
 
 // U8G2
-U8G2_ST7567_ENH_DG128064_F_4W_SW_SPI u8g2(U8G2_MIRROR, /* SCK clock=*/ 6, /* SCL data=*/ 8, /* cs=*/ 1, /* A0 dc=*/ 3, /* RST=*/ 5);  // Pax Instruments Shield, LCD_BL=6
+U8G2_ST7567_ENH_DG128064_F_4W_SW_SPI u8g2(
+    U8G2_MIRROR, /* SCK clock=*/6, /* SCL data=*/8, /* cs=*/1, /* A0 dc=*/3,
+    /* RST=*/5);  // Pax Instruments Shield, LCD_BL=6
 
 // index of loading animation.
 byte loadingAnimationPageIndex = 0;
@@ -40,22 +42,23 @@ byte loadingAnimationPageIndex = 0;
 void setup() {
   // random.
   srand(analogRead(A3));
-  
+
   // init u8g2.
   u8g2.begin();
-  u8g2.enableUTF8Print();    // enable UTF8 support for the Arduino print() function
+  u8g2.enableUTF8Print();  // enable UTF8 support for the Arduino print()
+                           // function
   u8g2.setFontDirection(0);
 }
 
 void loop() {
   u8g2.clearBuffer();
-  
+
   if (gViewHandler == NULL) {
     navigateTo(landingView);
   }
 
   navigateToInternal();
-  
+
   u8g2.sendBuffer();
   delay(100);
 }
@@ -64,10 +67,10 @@ void loop() {
 void landingView() {
   // display "What's your doubt" message.
   int posY = (SCREEN_HEIGHT + ENGLISH_CHAR_HEIGHT) / 2;
-  
+
   char *msg = "What's your doubt?";
   int posX = 14;
-  
+
   u8g2.firstPage();
   do {
     u8g2.setFont(FONT_EN);
@@ -90,7 +93,7 @@ void algorithmSelectingView() {
   if (wait(600)) {
     autoSelectionStatus++;
   }
-    
+
   if (autoSelectionStatus > 3) {
     autoSelectionStatus = 0;
     navigateTo(trigramView);
@@ -107,7 +110,7 @@ void algorithmSelectingView() {
       optionColor[1] = 1;
       break;
   }
-  
+
   // display "Please choose your method:".
   u8g2.firstPage();
   do {
@@ -124,28 +127,30 @@ void algorithmSelectingView() {
     int boxColor = optionColor[0];
     int textColor = (boxColor + 1) % 2;
     u8g2.setColorIndex(boxColor);
-    
+
     int boxWidth = ENGLISH_CHAR_WIDTH * 6;
     int boxHeight = ENGLISH_CHAR_HEIGHT * 2;
     u8g2.drawBox(posX, posY, boxWidth, boxHeight);
-    
+
     u8g2.setColorIndex(textColor);
     u8g2.setFont(FONT_EN);
-    u8g2.drawUTF8(posX + ENGLISH_CHAR_WIDTH / 2, posY + boxHeight - ENGLISH_CHAR_HEIGHT / 2, "Yes/No");
+    u8g2.drawUTF8(posX + ENGLISH_CHAR_WIDTH / 2,
+                  posY + boxHeight - ENGLISH_CHAR_HEIGHT / 2, "Yes/No");
     // restore color.
     u8g2.setColorIndex(1);
-    
+
     // Option: 六爻
     boxColor = optionColor[1];
     textColor = (boxColor + 1) % 2;
     u8g2.setColorIndex(boxColor);
-    
+
     posX += boxWidth + 8;
     u8g2.drawBox(posX, posY, boxWidth, boxHeight);
-    
+
     u8g2.setColorIndex(textColor);
     u8g2.setFont(FONT_CN);
-    u8g2.drawUTF8(posX + (boxWidth - 2 * CHINESE_CHAR_WIDTH) / 2 - 2, posY + boxHeight - CHINESE_CHAR_HEIGHT / 2 + 2, "六爻");
+    u8g2.drawUTF8(posX + (boxWidth - 2 * CHINESE_CHAR_WIDTH) / 2 - 2,
+                  posY + boxHeight - CHINESE_CHAR_HEIGHT / 2 + 2, "六爻");
 
     // restore color.
     u8g2.setColorIndex(1);
@@ -160,10 +165,9 @@ void trigramView() {
   loadingAnimation();
 }
 
-
 int format_my_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
-                   int ying_yao_idx, int trigram_five_element);
-                   
+                      int ying_yao_idx, int trigram_five_element);
+
 void explainTrigramView() {
   static int scrollTo = 0;
   static TRIGRAM trigram = 0;
@@ -175,7 +179,7 @@ void explainTrigramView() {
   if (viewHasChanged()) {
     // reset.
     scrollTo = 0;
-    
+
     // roll dice.
     RAWTRIGRAM raw = rolldice();
     RAWTRIGRAM alterraw = rawtrigram_alter(raw);
@@ -183,17 +187,17 @@ void explainTrigramView() {
     trigram = trigram_new(raw);
     altered_trigram = trigram_new(alterraw);
   }
-  
+
   if (wait(1000)) {
     scrollTo++;
   }
 
-  if (scrollTo >= scrollCycle*2) {
+  if (scrollTo >= scrollCycle * 2) {
     // go back to landing view.
     navigateTo(landingView);
     return;
   }
-  
+
   // Trigram.
   int orig_shi_yao_idx = 0;
   int orig_ying_yao_idx = 0;
@@ -217,15 +221,15 @@ void explainTrigramView() {
   u8g2.firstPage();
 
   int scrollToIdx = scrollTo % scrollCycle;
-  
-  do {  
+
+  do {
     int posX = 8;
     int posY = CHINESE_CHAR_HEIGHT + 2;
-    int deltaY = CHINESE_CHAR_HEIGHT + LINE_HEIGHT*2;
+    int deltaY = CHINESE_CHAR_HEIGHT + LINE_HEIGHT * 2;
     int lineIdx = 0;
 
     char buf[52] = {0};
-    
+
     // trigram.
     for (int i = 6; i >= 0; i--) {
       if (lineIdx < scrollToIdx) {
@@ -235,10 +239,11 @@ void explainTrigramView() {
       lineIdx++;
 
       if (i == 6) {
-        sprintf(buf, "  本卦 %d", (int)trigram); // TRIGRAM_NAMES[(int)trigram]);
+        sprintf(buf, "  本卦 %d",
+                (int)trigram);  // TRIGRAM_NAMES[(int)trigram]);
       } else {
         format_my_trigram(buf, trigram, i, orig_shi_yao_idx, orig_ying_yao_idx,
-                   orig_trigram_five_element);
+                          orig_trigram_five_element);
       }
       u8g2.drawUTF8(posX, posY, buf);
       posY += deltaY;
@@ -261,22 +266,22 @@ void explainTrigramView() {
         continue;
       }
       lineIdx++;
-      
+
       if (i == 6) {
-        sprintf(buf, "  变卦 %d", altered_trigram); // TRIGRAM_NAMES[(int)altered_trigram]);
+        sprintf(buf, "  变卦 %d",
+                altered_trigram);  // TRIGRAM_NAMES[(int)altered_trigram]);
       } else {
         format_my_trigram(buf, altered_trigram, i, altered_shi_yao_idx,
-                   altered_ying_yao_idx, altered_trigram_five_element);
+                          altered_ying_yao_idx, altered_trigram_five_element);
       }
       u8g2.drawUTF8(posX, posY, buf);
       posY += deltaY;
     }
   } while (u8g2.nextPage());
-
 }
 
 int format_my_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
-                   int ying_yao_idx, int trigram_five_element) {
+                      int ying_yao_idx, int trigram_five_element) {
   int yao = trigram_get_yao(trigram, i);
   int earthly_branch_of_yao = trigram_get_earthly_branch(trigram, i);
   int five_element_of_yao =
@@ -303,26 +308,25 @@ int format_my_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
   return sprintf(buf, "%s%s%s %s%s", SIX_RELATIVES[six_relative_of_yao],
                  EARTHLY_BRANCHES[earthly_branch_of_yao],
                  FIVE_ELEMENTS[five_element_of_yao], symbol, shi_or_ying);
-
 }
 void loadingAnimation() {
-  loadingAnimationPageIndex = (loadingAnimationPageIndex+1) % 2;
+  loadingAnimationPageIndex = (loadingAnimationPageIndex + 1) % 2;
 
   u8g2.firstPage();
   do {
-      if (loadingAnimationPageIndex == 0) {
-        u8g2.drawXBMP(0, 0, OPEN_MOUTH_WIDTH, OPEN_MOUTH_HEIGHT, OPEN_MOUTH_DATA);
-      } else {
-        u8g2.drawXBMP(0, 0, SHUT_MOUTH_WIDTH, SHUT_MOUTH_HEIGHT, SHUT_MOUTH_DATA);
-      }
+    if (loadingAnimationPageIndex == 0) {
+      u8g2.drawXBMP(0, 0, OPEN_MOUTH_WIDTH, OPEN_MOUTH_HEIGHT, OPEN_MOUTH_DATA);
+    } else {
+      u8g2.drawXBMP(0, 0, SHUT_MOUTH_WIDTH, SHUT_MOUTH_HEIGHT, SHUT_MOUTH_DATA);
+    }
   } while (u8g2.nextPage());
 }
 
 void navigateToInternal() {
   bool shouldReset = gViewHasChanged;
-  
+
   gViewHandler();
-  
+
   if (shouldReset) {
     gViewHasChanged = false;
   }
@@ -336,9 +340,7 @@ void navigateTo(ViewHandler view) {
   gViewHandler = view;
 }
 
-bool viewHasChanged() {
-  return gViewHasChanged;
-}
+bool viewHasChanged() { return gViewHasChanged; }
 
 bool wait(int ms) {
   static unsigned long enteringTime = 0;

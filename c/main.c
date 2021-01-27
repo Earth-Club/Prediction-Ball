@@ -68,6 +68,7 @@ int main(int argc, char **argv) {
          "月　", GanUTF8[gan2.day], ZhiUTF8[zhi2.day], "日　",
          GanUTF8[gan2.hour], ZhiUTF8[zhi2.hour],
          "时　(用四柱神算推算之时辰八字)");
+
   if (jieAlert) {
     printf("* %s, %s\n", "是日为节", "月柱可能要修改");
     if (lunar2.month == 1) printf("* %s\n", "年柱亦可能要修改");
