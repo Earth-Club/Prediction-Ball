@@ -12,13 +12,13 @@ extern "C" {
 #ifdef LUNAR_DATE_H
 #define EARTHLY_BRANCHES ZhiUTF8
 #else
-static char *EARTHLY_BRANCHES[] = {"子", "丑", "寅", "卯", "辰", "巳",
+static const char * const EARTHLY_BRANCHES[] = {"子", "丑", "寅", "卯", "辰", "巳",
                                    "午", "未", "申", "酉", "戌", "亥"};
 #endif
 
-static char *YAO_NAMES[] = {"初", "二", "三", "四", "五", "上"};
+static const char * const YAO_NAMES[] = {"初", "二", "三", "四", "五", "上"};
 
-static char *TRIGRAM_NAMES[] = {
+static const char * const TRIGRAM_NAMES[] = {
     "坤为地",   "山地剥",   "水地比", "风地观",   "雷地豫",   "火地晋",
     "泽地萃",   "天地否",   "地山谦", "艮为山",   "水山蹇",   "风山渐",
     "雷山小过", "火山旅",   "泽山咸", "天山遁",   "地水师",   "山水蒙",
@@ -31,17 +31,17 @@ static char *TRIGRAM_NAMES[] = {
     "兑为泽",   "天泽履",   "地天泰", "山天大畜", "水天需",   "风天小畜",
     "雷天大壮", "火天大有", "泽天夬", "乾为天"};
 
-static char *EIGHT_GONGS[] = {"坤", "艮", "坎", "巽", "震", "离", "兑", "乾"};
+static const char * const EIGHT_GONGS[] = {"坤", "艮", "坎", "巽", "震", "离", "兑", "乾"};
 
-static char *FIVE_ELEMENTS[] = {"金", "木", "水", "火", "土"};
+static const char * const FIVE_ELEMENTS[] = {"金", "木", "水", "火", "土"};
 // 木生火，火生土，土生金，金生水，水生木
-static int FIVE_ELEMENTS_PROMITING[] = {2, 3, 1, 4, 0};
+static const int FIVE_ELEMENTS_PROMITING[] = {2, 3, 1, 4, 0};
 // 木剋土，土剋水，水剋火，火剋金，金剋木
-static int FIVE_ELEMENTS_REGULATING[] = {1, 4, 3, 0, 2};
+static const int FIVE_ELEMENTS_REGULATING[] = {1, 4, 3, 0, 2};
 
 // 父母生兄弟，兄弟生子孫，子孫生妻財，妻財生官鬼，官鬼生父母
 // 父母剋子孫，子孫剋官鬼，官鬼剋兄弟，兄弟剋妻財，妻財剋父母
-static char *SIX_RELATIVES[] = {"父母", "兄弟", "子孙", "妻财", "官鬼"};
+static const char * const SIX_RELATIVES[] = {"父母", "兄弟", "子孙", "妻财", "官鬼"};
 
 // 原来天干是用Yin/Yang的五行来表示，地支是用12生肖来表示。那这个每个爻对应的六神，是根据干支纪日来对应的。比如甲乙（日），Yang
 // Wood & Yin
@@ -49,7 +49,7 @@ static char *SIX_RELATIVES[] = {"父母", "兄弟", "子孙", "妻财", "官鬼"
 // 有一点不太一样的就是“戊 Yang Earth”和“己 Yin
 // Earth”，都是土，但戊是勾陈，己是腾蛇属火。 from
 // https://en.wikipedia.org/wiki/Sexagenary_cycle
-static char *SIX_GODS[] = {"青龙", "朱雀", "勾陈", "螣蛇", "白虎", "玄武"};
+static const char * const SIX_GODS[] = {"青龙", "朱雀", "勾陈", "螣蛇", "白虎", "玄武"};
 
 int eight_gong_to_five_element(int idx);
 

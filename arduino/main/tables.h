@@ -34,23 +34,23 @@ extern "C" {
 #define Nyear 150  /* number of years covered by the table */
 #define Nmonth 13  /* maximum number of months in a lunar year */
 
-static Date SolarFirstDate = {
+static const Date SolarFirstDate = {
     /* Wednesday, 12 a.m., 31 January, 1900 */
     1900, 1, 31, 0, 3, 0};
 
-static Date LunarFirstDate = {
+static const Date LunarFirstDate = {
     /* Wednesday, 12 a.m., First day, First month, 1900 */
     1900, 1, 1, 0, 3, 0};
 
-static Date GanFirstDate = {
+static const Date GanFirstDate = {
     /* geng1-nian2 wu4-yue4 jia3-ri4 jia3-shi2 */
     6, 4, 0, 0, 3, 0};
 
-static Date ZhiFirstDate = {
+static const Date ZhiFirstDate = {
     /* zi3-nian2 yin2-yue4 chen2-ri4 zi3-shi2 */
     0, 2, 4, 0, 3, 0};
 
-static long yearInfo[Nyear] = {
+static const long yearInfo[Nyear] = {
     /* encoding:
                 b bbbbbbbbbbbb bbbb
        bit#    	1 111111000000 0000
@@ -112,7 +112,7 @@ static long yearInfo[Nyear] = {
   the jie of the 12th lunar month is on Jan. 5, 1993.
 */
 
-static char fest[Nyear][12] = {
+static const char fest[Nyear][12] = {
     {4, 6, 5, 6, 6, 7, 8, 8, 9, 8, 7, 6}, /* 1900 */
     {4, 6, 5, 6, 6, 8, 8, 8, 9, 8, 8, 6}, /* 1901 */
     {5, 6, 6, 6, 7, 8, 8, 8, 9, 8, 8, 6}, /* 1902 */

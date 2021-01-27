@@ -107,10 +107,10 @@ int main(int argc, char **argv) {
 
   for (int i = 5; i >= 0; i--) {
     // name of yao.
-    char *yao_name = YAO_NAMES[i];
+    const char *yao_name = YAO_NAMES[i];
 
     // Six God.
-    char *six_god = SIX_GODS[(six_god_of_first_yao + i) % 6];
+    const char *six_god = SIX_GODS[(six_god_of_first_yao + i) % 6];
 
     char trigram_str[64] = {0};
     format_trigram(trigram_str, trigram, i, orig_shi_yao_idx, orig_ying_yao_idx,

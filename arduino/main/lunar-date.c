@@ -11,8 +11,8 @@ static int moon[2] = {29, 30}; /* a short (long) lunar month has 29 (30) days */
 // int GZcycle();
 // int CmpDate(), JieDate();
 
-long Solar2Day(Date *d);
-long Solar2Day1(Date *d);
+long Solar2Day(const Date *d);
+long Solar2Day1(const Date *d);
 int Day2Solar(long offset, Date *d);
 int Day2Lunar(long offset, Date *d);
 int JieDate(Date *ds, Date *dl);
@@ -25,12 +25,12 @@ void CalGZ(long offset, Date *d, Date *g, Date *z);
 /* BYEAR % 4 == 1  and BYEAR % 400 == 1 for easy calculation of leap years */
 /* assert(BYEAR <= SolarFirstDate.year) */
 
-long Solar2Day(Date *d) {
+long Solar2Day(const Date *d) {
   return (Solar2Day1(d) - Solar2Day1(&SolarFirstDate));
 }
 
 /* Compute the number of days from the Solar date BYEAR.1.1 */
-long Solar2Day1(Date *d) {
+long Solar2Day1(const Date *d) {
   long offset, delta;
   int i;
 

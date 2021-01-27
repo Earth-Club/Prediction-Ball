@@ -349,7 +349,7 @@ void trigram_print(TRIGRAM trigram, char *prefix) {
   if (prefix == NULL) {
     prefix = "TRIGRAM";
   }
-  char *name = TRIGRAM_NAMES[(int)trigram];
+  const char *name = TRIGRAM_NAMES[(int)trigram];
   if (strlen(name) == 12) {
     printf("%s: " BYTE_TO_BINARY_PATTERN "  %s    (%4d)\n", prefix,
            BYTE_TO_BINARY(trigram), name, trigram);
