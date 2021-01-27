@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <U8g2lib.h>
+#include <avr/pgmspace.h>
 
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
@@ -174,7 +175,7 @@ void explainTrigramView() {
   static TRIGRAM altered_trigram = 0;
 
   const int maxLinePerPage = 5;
-  const int scrollCycle = 16;
+  const int scrollCycle = 18;
 
   if (viewHasChanged()) {
     // reset.
@@ -230,6 +231,16 @@ void explainTrigramView() {
 
     char buf[52] = {0};
 
+    // 1 blank line.
+    for (int i = 0; i < 1; i++) {
+      if (lineIdx < scrollToIdx) {
+        lineIdx++;
+        continue;
+      }
+      lineIdx++;
+      posY += deltaY;
+    }
+
     // trigram.
     for (int i = 6; i >= 0; i--) {
       if (lineIdx < scrollToIdx) {
@@ -239,8 +250,13 @@ void explainTrigramView() {
       lineIdx++;
 
       if (i == 6) {
+        // char trigram_name_buf[13] = {0};
+        // strcpy_P(trigram_name_buf,
+        //  (char *)pgm_read_word(&(TRIGRAM_NAMES[(int)trigram])));
+        // sprintf(buf, " %s %d",
+        // trigram_name_buf, (int)trigram);
         sprintf(buf, "  本卦 %d",
-                (int)trigram);  // TRIGRAM_NAMES[(int)trigram]);
+                trigram);  // TRIGRAM_NAMES[(int)altered_trigram]);
       } else {
         format_my_trigram(buf, trigram, i, orig_shi_yao_idx, orig_ying_yao_idx,
                           orig_trigram_five_element);
@@ -305,9 +321,18 @@ int format_my_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
   int six_relative_of_yao = trigram_get_six_relative(
       trigram_five_element, five_element_of_yao, NULL, NULL);
 
-  return sprintf(buf, "%s%s%s %s%s", SIX_RELATIVES[six_relative_of_yao],
-                 EARTHLY_BRANCHES[earthly_branch_of_yao],
-                 FIVE_ELEMENTS[five_element_of_yao], symbol, shi_or_ying);
+  char six_relative_buf[7] = {0};
+  char earthly_branch_buf[4] = {0};
+  char five_element_buf[4] = {0};
+  strcpy_P(six_relative_buf,
+           (char *)pgm_read_word(&(SIX_RELATIVES[six_relative_of_yao])));
+  strcpy_P(earthly_branch_buf,
+           (char *)pgm_read_word(&(EARTHLY_BRANCHES[earthly_branch_of_yao])));
+  strcpy_P(five_element_buf,
+           (char *)pgm_read_word(&(FIVE_ELEMENTS[five_element_of_yao])));
+
+  return sprintf(buf, "%s%s%s %s%s", six_relative_buf, earthly_branch_buf,
+                 five_element_buf, symbol, shi_or_ying);
 }
 void loadingAnimation() {
   loadingAnimationPageIndex = (loadingAnimationPageIndex + 1) % 2;

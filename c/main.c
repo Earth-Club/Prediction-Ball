@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "lunar-date.h"
 #include "trigram.h"
 
 int main(int argc, char **argv) {
