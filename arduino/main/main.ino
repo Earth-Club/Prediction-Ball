@@ -200,12 +200,6 @@ void questionHintView() {
     return;
   }
 
-  const int seperator_height = ENGLISH_CHAR_HEIGHT;
-
-  int posX = 0;
-  int posY = 0;
-  int len = 0;
-  char buf[30] = {0};
   const char *const *hints = NULL;
   int lineCount = 0;
 
@@ -217,32 +211,20 @@ void questionHintView() {
     hints = QUESTION_HINTS_2;
   }
 
-  posY =
-      (SCREEN_HEIGHT - ENGLISH_CHAR_HEIGHT * lineCount + seperator_height) / 2;
-
-  u8g2.setFont(FONT_EN);
-  u8g2.firstPage();
-  do {
-    for (int i = 0; i < lineCount; i++) {
-      strcpy_P(buf, (char *)pgm_read_word(&hints[i]));
-      len = strlen(buf);
-      posX = (SCREEN_WIDTH - len * ENGLISH_CHAR_WIDTH) / 2;
-      if (posX < 0) {
-        posX = 0;
-      }
-      u8g2.drawStr(posX, posY, buf);
-      posY += seperator_height + ENGLISH_CHAR_HEIGHT;
-    }
-  } while (u8g2.nextPage());
+  showEnglishText(hints, lineCount);
 }
 
 void animationView() {
   if (wait(2000)) {
-    if (selectedOption == 1) {
+    if (selectedOption == OPTION_YES_OR_NO) {
       navigateTo(explainYesNoView);
-    } else {
+    } else if (selectedOption == OPTION_TRIGRAM) {
       navigateTo(explainTrigramView);
+      // navigateTo(explainYesNoView);
+    } else {
+      navigateTo(landingView);
     }
+    return;
   }
   // show loading animation.
   loadingAnimation();
@@ -260,13 +242,6 @@ void explainYesNoView() {
     r = rand() % 2;
   }
 
-  const int seperator_height = ENGLISH_CHAR_HEIGHT;
-
-  int posX = 0;
-  int posY = 0;
-  int len = 0;
-  char buf[30] = {0};
-  int lineCount = 2;
   const char *const *answer = NULL;
 
   // random [0, 1].
@@ -276,23 +251,7 @@ void explainYesNoView() {
     answer = YES;
   }
 
-  posY =
-      (SCREEN_HEIGHT - ENGLISH_CHAR_HEIGHT * lineCount + seperator_height) / 2;
-
-  u8g2.setFont(FONT_EN);
-  u8g2.firstPage();
-  do {
-    for (int i = 0; i < lineCount; i++) {
-      strcpy_P(buf, (char *)pgm_read_word(&answer[i]));
-      len = strlen(buf);
-      posX = (SCREEN_WIDTH - len * ENGLISH_CHAR_WIDTH) / 2;
-      if (posX < 0) {
-        posX = 0;
-      }
-      u8g2.drawStr(posX, posY, buf);
-      posY += seperator_height + ENGLISH_CHAR_HEIGHT;
-    }
-  } while (u8g2.nextPage());
+  showEnglishText(answer, 2);
 }
 
 int format_my_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
@@ -363,70 +322,55 @@ void explainTrigramView() {
 
   char buf[52] = {0};
 
+  int items[] = {header_line, 0, seperator_line, 0};
+
   u8g2.setFont(FONT_CN);
   u8g2.firstPage();
   do {
-    // 1 blank line.
-    for (int i = 0; i < header_line; i++) {
-      if (lineIdx < scrollToIdx) {
-        lineIdx++;
+    for (int x = 0; x < 4; x++) {
+      if (items[x] > 0) {
+        for (int i = 0; i < items[x]; i++) {
+          if (lineIdx < scrollToIdx) {
+            lineIdx++;
+            continue;
+          }
+          lineIdx++;
+          posY += deltaY;
+        }
         continue;
       }
-      lineIdx++;
-      posY += deltaY;
-    }
 
-    // trigram.
-    for (int i = trigram_line; i >= 0; i--) {
-      if (lineIdx < scrollToIdx) {
+      for (int i = trigram_line; i >= 0; i--) {
+        if (lineIdx < scrollToIdx) {
+          lineIdx++;
+          continue;
+        }
         lineIdx++;
-        continue;
-      }
-      lineIdx++;
 
-      if (i == trigram_line) {
-        // char trigram_name_buf[13] = {0};
-        // strcpy_P(trigram_name_buf,
-        //  (char *)pgm_read_word(&(TRIGRAM_NAMES[(int)trigram])));
-        // sprintf(buf, " %s %d",
-        // trigram_name_buf, (int)trigram);
-        sprintf(buf, "  本卦 %d",
-                trigram);  // TRIGRAM_NAMES[(int)altered_trigram]);
-      } else {
-        format_my_trigram(buf, trigram, i, orig_shi_yao_idx, orig_ying_yao_idx,
-                          orig_trigram_five_element);
-      }
-      u8g2.drawUTF8(posX, posY, buf);
-      posY += deltaY;
-    }
+        if (x == 1) {
+          // trigram.
+          if (i == trigram_line) {
+            sprintf(buf, "  本卦 %d", trigram);
+          } else {
+            format_my_trigram(buf, trigram, i, orig_shi_yao_idx,
+                              orig_ying_yao_idx, orig_trigram_five_element);
+          }
+        } else if (x == 3) {
+          // altered trigram.
+          if (i == trigram_line) {
+            sprintf(buf, "  变卦 %d", altered_trigram);
+          } else {
+            format_my_trigram(buf, altered_trigram, i, altered_shi_yao_idx,
+                              altered_ying_yao_idx,
+                              altered_trigram_five_element);
+          }
+        } else {
+          continue;
+        }
 
-    // 1 blank line.
-    for (int i = 0; i < seperator_line; i++) {
-      if (lineIdx < scrollToIdx) {
-        lineIdx++;
-        continue;
+        u8g2.drawUTF8(posX, posY, buf);
+        posY += deltaY;
       }
-      lineIdx++;
-      posY += deltaY;
-    }
-
-    // altered trigram.
-    for (int i = trigram_line; i >= 0; i--) {
-      if (lineIdx < scrollToIdx) {
-        lineIdx++;
-        continue;
-      }
-      lineIdx++;
-
-      if (i == trigram_line) {
-        sprintf(buf, "  变卦 %d",
-                altered_trigram);  // TRIGRAM_NAMES[(int)altered_trigram]);
-      } else {
-        format_my_trigram(buf, altered_trigram, i, altered_shi_yao_idx,
-                          altered_ying_yao_idx, altered_trigram_five_element);
-      }
-      u8g2.drawUTF8(posX, posY, buf);
-      posY += deltaY;
     }
   } while (u8g2.nextPage());
 }
@@ -469,6 +413,32 @@ int format_my_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
   return sprintf(buf, "%s%s%s %s%s", six_relative_buf, earthly_branch_buf,
                  five_element_buf, symbol, shi_or_ying);
 }
+
+void showEnglishText(const char *const text[], int lineCount) {
+  const int seperator_height = ENGLISH_CHAR_HEIGHT;
+
+  char buf[30] = {0};
+  int len = 0;
+  int posX = 0;
+  int posY =
+      (SCREEN_HEIGHT - ENGLISH_CHAR_HEIGHT * lineCount + seperator_height) / 2;
+
+  u8g2.setFont(FONT_EN);
+  u8g2.firstPage();
+  do {
+    for (int i = 0; i < lineCount; i++) {
+      strcpy_P(buf, (char *)pgm_read_word(&text[i]));
+      len = strlen(buf);
+      posX = (SCREEN_WIDTH - len * ENGLISH_CHAR_WIDTH) / 2;
+      if (posX < 0) {
+        posX = 0;
+      }
+      u8g2.drawStr(posX, posY, buf);
+      posY += seperator_height + ENGLISH_CHAR_HEIGHT;
+    }
+  } while (u8g2.nextPage());
+}
+
 void loadingAnimation() {
   loadingAnimationPageIndex = (loadingAnimationPageIndex + 1) % 2;
 
