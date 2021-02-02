@@ -14,6 +14,8 @@
 #include "animation.h"
 #include "trigram.h"
 
+#define ENABLE_SIX_YAO 0
+
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 
@@ -26,6 +28,10 @@
 #define FONT_CN u8g2_font_wqy9_t_chinese4
 #define CHINESE_CHAR_HEIGHT 9
 #define CHINESE_CHAR_WIDTH 9
+
+const char QUESTION_HINT_1[] PROGMEM = {"Please repeat your"};
+const char QUESTION_HINT_2[] PROGMEM = {"question in mind"};
+const char* const QUESTION_HINTS[] PROGMEM = {QUESTION_HINT_1, QUESTION_HINT_2};
 
 // view function handler.
 typedef void (*ViewHandler)();
@@ -95,11 +101,21 @@ void algorithmSelectingView() {
     autoSelectionStatus++;
   }
 
+  // select six yao.
+  #if ENABLE_SIX_YAO
   if (autoSelectionStatus > 3) {
     autoSelectionStatus = 0;
     navigateTo(trigramView);
     return;
   }
+  #else
+  // select yes or not.
+  if (autoSelectionStatus > 2) {
+    autoSelectionStatus = 0;
+    navigateTo(yesOrNoView);
+    return;
+  }
+  #endif
 
   switch (autoSelectionStatus % 2) {
     case 0:
@@ -158,11 +174,29 @@ void algorithmSelectingView() {
   } while (u8g2.nextPage());
 }
 
+void yesOrNoView() {
+  if (wait(2000)) {
+    navigateTo(explainYesNoView);
+  }
+  // show question hint view.
+  loadingHintView();
+}
+
+void explainYesNoView() {
+  char buf[52] = {0};
+
+  u8g2.setFont(FONT_EN);
+  u8g2.firstPage();
+  do {
+    u8g2.drawUTF8(0, 20, "buf");
+  } while (u8g2.nextPage());
+}
+
 void trigramView() {
-  // show loading animation.
   if (wait(2000)) {
     navigateTo(explainTrigramView);
   }
+  // show loading animation.
   loadingAnimation();
 }
 
@@ -231,11 +265,10 @@ void explainTrigramView() {
   int altered_trigram_five_element =
       eight_gong_to_five_element(altered_trigram_eight_gong);
 
-  u8g2.setFont(FONT_CN);
-  u8g2.firstPage();
-
   char buf[52] = {0};
 
+  u8g2.setFont(FONT_CN);
+  u8g2.firstPage();
   do {
     // 1 blank line.
     for (int i = 0; i < header_line; i++) {
@@ -350,6 +383,31 @@ void loadingAnimation() {
     } else {
       u8g2.drawXBMP(0, 0, SHUT_MOUTH_WIDTH, SHUT_MOUTH_HEIGHT, SHUT_MOUTH_DATA);
     }
+  } while (u8g2.nextPage());
+}
+
+void loadingHintView() {
+  const int seperator_height = ENGLISH_CHAR_HEIGHT;
+
+  int posX = 0;
+  int posY = (SCREEN_HEIGHT - ENGLISH_CHAR_HEIGHT * 2 + seperator_height) / 2;
+  int len = 0;
+
+  char buf[30] = {0};
+
+  u8g2.setFont(FONT_EN);
+  u8g2.firstPage();
+  do {
+      strcpy_P(buf, (char*)pgm_read_word(&QUESTION_HINTS[0]));
+      len = strlen(buf);
+      posX = (SCREEN_WIDTH - len * (ENGLISH_CHAR_WIDTH-1)) / 2;
+      u8g2.drawStr(posX, posY, buf);
+
+      posY += seperator_height + ENGLISH_CHAR_HEIGHT;
+      strcpy_P(buf, (char*)pgm_read_word(&QUESTION_HINTS[1]));
+      len = strlen(buf);
+      posX = (SCREEN_WIDTH - len * (ENGLISH_CHAR_WIDTH-1)) / 2;
+      u8g2.drawStr(posX, posY, buf);
   } while (u8g2.nextPage());
 }
 
