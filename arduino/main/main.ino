@@ -29,9 +29,16 @@
 #define CHINESE_CHAR_HEIGHT 9
 #define CHINESE_CHAR_WIDTH 9
 
-const char QUESTION_HINT_1[] PROGMEM = {"Please repeat your"};
-const char QUESTION_HINT_2[] PROGMEM = {"question in mind"};
-const char* const QUESTION_HINTS[] PROGMEM = {QUESTION_HINT_1, QUESTION_HINT_2};
+const char QUESTION_HINT_10[] PROGMEM = {"Please repeat your"};
+const char QUESTION_HINT_11[] PROGMEM = {"question in mind"};
+const char *const QUESTION_HINTS_1[] PROGMEM = {QUESTION_HINT_10,
+                                                QUESTION_HINT_11};
+
+const char QUESTION_HINT_20[] PROGMEM = {"Please be concentrated"};
+const char QUESTION_HINT_21[] PROGMEM = {"Repeat your question"};
+const char QUESTION_HINT_22[] PROGMEM = {"in 3 times"};
+const char *const QUESTION_HINTS_2[] PROGMEM = {
+    QUESTION_HINT_20, QUESTION_HINT_21, QUESTION_HINT_22};
 
 // view function handler.
 typedef void (*ViewHandler)();
@@ -45,6 +52,9 @@ U8G2_ST7567_ENH_DG128064_F_4W_SW_SPI u8g2(
 
 // index of loading animation.
 byte loadingAnimationPageIndex = 0;
+
+// selected option. {0: undefined, 1: yesOrNo, 2: trigram}
+byte selectedOption = 0;
 
 void setup() {
   // random.
@@ -101,21 +111,19 @@ void algorithmSelectingView() {
     autoSelectionStatus++;
   }
 
-  // select six yao.
-  #if ENABLE_SIX_YAO
+#if ENABLE_SIX_YAO
   if (autoSelectionStatus > 3) {
-    autoSelectionStatus = 0;
-    navigateTo(trigramView);
-    return;
-  }
-  #else
-  // select yes or not.
+    // select six yao.
+    selectedOption = 2;
+#else
   if (autoSelectionStatus > 2) {
+    // select yes or not.
+    selectedOption = 1;
+#endif
     autoSelectionStatus = 0;
-    navigateTo(yesOrNoView);
+    navigateTo(questionHintView);
     return;
   }
-  #endif
 
   switch (autoSelectionStatus % 2) {
     case 0:
@@ -174,12 +182,56 @@ void algorithmSelectingView() {
   } while (u8g2.nextPage());
 }
 
-void yesOrNoView() {
+void questionHintView() {
   if (wait(2000)) {
-    navigateTo(explainYesNoView);
+    navigateTo(animationView);
   }
-  // show question hint view.
-  loadingHintView();
+
+  const int seperator_height = ENGLISH_CHAR_HEIGHT;
+
+  int posX = 0;
+  int posY = 0;
+  int len = 0;
+  char buf[30] = {0};
+  const char* const* hints = NULL;
+  int lineCount = 0;
+
+  if (selectedOption == 1) {
+    lineCount = 2;
+    hints = QUESTION_HINTS_1;
+  } else if (selectedOption == 2) {
+    lineCount = 3;
+    hints = QUESTION_HINTS_2;
+  }
+
+  posY = (SCREEN_HEIGHT - ENGLISH_CHAR_HEIGHT * lineCount + seperator_height) / 2;
+
+  u8g2.setFont(FONT_EN);
+  u8g2.firstPage();
+  do {
+    for (int i=0;i<lineCount;i++) {
+      strcpy_P(buf, (char *)pgm_read_word(&hints[i]));
+      len = strlen(buf);
+      posX = (SCREEN_WIDTH - len * ENGLISH_CHAR_WIDTH) / 2;
+      if (posX < 0) {
+        posX = 0;
+      }
+      u8g2.drawStr(posX, posY, buf);
+      posY += seperator_height + ENGLISH_CHAR_HEIGHT;
+    }
+  } while (u8g2.nextPage());
+}
+
+void animationView() {
+  if (wait(2000)) {
+    if (selectedOption == 1) {
+      navigateTo(explainYesNoView);
+    } else {
+      navigateTo(explainTrigramView);
+    }
+  }
+  // show loading animation.
+  loadingAnimation();
 }
 
 void explainYesNoView() {
@@ -190,14 +242,6 @@ void explainYesNoView() {
   do {
     u8g2.drawUTF8(0, 20, "buf");
   } while (u8g2.nextPage());
-}
-
-void trigramView() {
-  if (wait(2000)) {
-    navigateTo(explainTrigramView);
-  }
-  // show loading animation.
-  loadingAnimation();
 }
 
 int format_my_trigram(char *buf, TRIGRAM trigram, int i, int shi_yao_idx,
@@ -215,7 +259,8 @@ void explainTrigramView() {
   const int seperator_line = 1;
   const int bottom_line = 2;
 
-  const int scrollCycle = header_line + seperator_line + trigram_line * 2 + bottom_line;
+  const int scrollCycle =
+      header_line + seperator_line + trigram_line * 2 + bottom_line;
 
   if (viewHasChanged()) {
     // reset.
@@ -383,31 +428,6 @@ void loadingAnimation() {
     } else {
       u8g2.drawXBMP(0, 0, SHUT_MOUTH_WIDTH, SHUT_MOUTH_HEIGHT, SHUT_MOUTH_DATA);
     }
-  } while (u8g2.nextPage());
-}
-
-void loadingHintView() {
-  const int seperator_height = ENGLISH_CHAR_HEIGHT;
-
-  int posX = 0;
-  int posY = (SCREEN_HEIGHT - ENGLISH_CHAR_HEIGHT * 2 + seperator_height) / 2;
-  int len = 0;
-
-  char buf[30] = {0};
-
-  u8g2.setFont(FONT_EN);
-  u8g2.firstPage();
-  do {
-      strcpy_P(buf, (char*)pgm_read_word(&QUESTION_HINTS[0]));
-      len = strlen(buf);
-      posX = (SCREEN_WIDTH - len * (ENGLISH_CHAR_WIDTH-1)) / 2;
-      u8g2.drawStr(posX, posY, buf);
-
-      posY += seperator_height + ENGLISH_CHAR_HEIGHT;
-      strcpy_P(buf, (char*)pgm_read_word(&QUESTION_HINTS[1]));
-      len = strlen(buf);
-      posX = (SCREEN_WIDTH - len * (ENGLISH_CHAR_WIDTH-1)) / 2;
-      u8g2.drawStr(posX, posY, buf);
   } while (u8g2.nextPage());
 }
 
