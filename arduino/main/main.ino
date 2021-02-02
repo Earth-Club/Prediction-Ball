@@ -22,8 +22,8 @@
 #define LINE_HEIGHT 2
 
 #define FONT_EN u8g2_font_nokiafc22_tr
-#define ENGLISH_CHAR_HEIGHT 7
-#define ENGLISH_CHAR_WIDTH 7
+#define ENGLISH_CHAR_HEIGHT 6
+#define ENGLISH_CHAR_WIDTH 6
 
 #define FONT_CN u8g2_font_wqy9_t_chinese4
 #define CHINESE_CHAR_HEIGHT 9
@@ -138,15 +138,15 @@ void algorithmSelectingView() {
     posY += ENGLISH_CHAR_HEIGHT + LINE_HEIGHT;
     u8g2.drawUTF8(posX, posY, "method:");
 
-    posY += LINE_HEIGHT * 2 + 8;
+    posY += LINE_HEIGHT * 2 + 10;
 
     // Option: Yes/No.
     int boxColor = optionColor[0];
     int textColor = (boxColor + 1) % 2;
     u8g2.setColorIndex(boxColor);
 
-    int boxWidth = ENGLISH_CHAR_WIDTH * 6;
-    int boxHeight = ENGLISH_CHAR_HEIGHT * 2;
+    int boxWidth = ENGLISH_CHAR_WIDTH * 6 + 6;
+    int boxHeight = ENGLISH_CHAR_HEIGHT * 2 + 2;
     u8g2.drawBox(posX, posY, boxWidth, boxHeight);
 
     u8g2.setColorIndex(textColor);
