@@ -175,7 +175,13 @@ void explainTrigramView() {
   static TRIGRAM altered_trigram = 0;
 
   const int maxLinePerPage = 5;
-  const int scrollCycle = 18;
+
+  const int trigram_line = 6;
+  const int header_line = 1;
+  const int seperator_line = 1;
+  const int bottom_line = 2;
+
+  const int scrollCycle = header_line + seperator_line + trigram_line * 2 + bottom_line;
 
   if (viewHasChanged()) {
     // reset.
@@ -199,6 +205,13 @@ void explainTrigramView() {
     return;
   }
 
+  int scrollToIdx = scrollTo % scrollCycle;
+
+  int posX = 8;
+  int posY = CHINESE_CHAR_HEIGHT + 2;
+  int deltaY = CHINESE_CHAR_HEIGHT + LINE_HEIGHT * 2;
+  int lineIdx = 0;
+
   // Trigram.
   int orig_shi_yao_idx = 0;
   int orig_ying_yao_idx = 0;
@@ -221,18 +234,11 @@ void explainTrigramView() {
   u8g2.setFont(FONT_CN);
   u8g2.firstPage();
 
-  int scrollToIdx = scrollTo % scrollCycle;
+  char buf[52] = {0};
 
   do {
-    int posX = 8;
-    int posY = CHINESE_CHAR_HEIGHT + 2;
-    int deltaY = CHINESE_CHAR_HEIGHT + LINE_HEIGHT * 2;
-    int lineIdx = 0;
-
-    char buf[52] = {0};
-
     // 1 blank line.
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < header_line; i++) {
       if (lineIdx < scrollToIdx) {
         lineIdx++;
         continue;
@@ -242,14 +248,14 @@ void explainTrigramView() {
     }
 
     // trigram.
-    for (int i = 6; i >= 0; i--) {
+    for (int i = trigram_line; i >= 0; i--) {
       if (lineIdx < scrollToIdx) {
         lineIdx++;
         continue;
       }
       lineIdx++;
 
-      if (i == 6) {
+      if (i == trigram_line) {
         // char trigram_name_buf[13] = {0};
         // strcpy_P(trigram_name_buf,
         //  (char *)pgm_read_word(&(TRIGRAM_NAMES[(int)trigram])));
@@ -266,7 +272,7 @@ void explainTrigramView() {
     }
 
     // 1 blank line.
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < seperator_line; i++) {
       if (lineIdx < scrollToIdx) {
         lineIdx++;
         continue;
@@ -276,14 +282,14 @@ void explainTrigramView() {
     }
 
     // altered trigram.
-    for (int i = 6; i >= 0; i--) {
+    for (int i = trigram_line; i >= 0; i--) {
       if (lineIdx < scrollToIdx) {
         lineIdx++;
         continue;
       }
       lineIdx++;
 
-      if (i == 6) {
+      if (i == trigram_line) {
         sprintf(buf, "  变卦 %d",
                 altered_trigram);  // TRIGRAM_NAMES[(int)altered_trigram]);
       } else {
