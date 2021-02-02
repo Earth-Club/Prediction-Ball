@@ -14,8 +14,6 @@
 #include "animation.h"
 #include "trigram.h"
 
-#define ENABLE_SIX_YAO 0
-
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 
@@ -40,6 +38,14 @@ const char QUESTION_HINT_22[] PROGMEM = {"in 3 times"};
 const char *const QUESTION_HINTS_2[] PROGMEM = {
     QUESTION_HINT_20, QUESTION_HINT_21, QUESTION_HINT_22};
 
+const char YES_0[] PROGMEM = {"YES. Just follow"};
+const char YES_1[] PROGMEM = {"your heart."};
+const char *const YES[] PROGMEM = {YES_0, YES_1};
+
+const char NO_0[] PROGMEM = {"No. Wait for the"};
+const char NO_1[] PROGMEM = {"signal come."};
+const char *const NO[] PROGMEM = {NO_0, NO_1};
+
 // view function handler.
 typedef void (*ViewHandler)();
 static ViewHandler gViewHandler = NULL;
@@ -53,7 +59,9 @@ U8G2_ST7567_ENH_DG128064_F_4W_SW_SPI u8g2(
 // index of loading animation.
 byte loadingAnimationPageIndex = 0;
 
-// selected option. {0: undefined, 1: yesOrNo, 2: trigram}
+#define OPTION_YES_OR_NO 1
+#define OPTION_TRIGRAM 3
+// selected option. {0: wait_yes, 1: yesOrNo, 2: wait_trigram, 3: trigram}
 byte selectedOption = 0;
 
 void setup() {
@@ -111,15 +119,19 @@ void algorithmSelectingView() {
     autoSelectionStatus++;
   }
 
-#if ENABLE_SIX_YAO
-  if (autoSelectionStatus > 3) {
+  if (selectedOption == OPTION_TRIGRAM || selectedOption == OPTION_YES_OR_NO) {
+    selectedOption = (selectedOption + 1) % 4;
+  }
+
+  if (selectedOption == 2 && autoSelectionStatus > 3) {
     // select six yao.
-    selectedOption = 2;
-#else
-  if (autoSelectionStatus > 2) {
+    selectedOption = OPTION_TRIGRAM;
+  } else if (selectedOption == 0 && autoSelectionStatus > 2) {
     // select yes or not.
-    selectedOption = 1;
-#endif
+    selectedOption = OPTION_YES_OR_NO;
+  }
+
+  if (selectedOption == OPTION_TRIGRAM || selectedOption == OPTION_YES_OR_NO) {
     autoSelectionStatus = 0;
     navigateTo(questionHintView);
     return;
@@ -185,6 +197,7 @@ void algorithmSelectingView() {
 void questionHintView() {
   if (wait(2000)) {
     navigateTo(animationView);
+    return;
   }
 
   const int seperator_height = ENGLISH_CHAR_HEIGHT;
@@ -193,23 +206,24 @@ void questionHintView() {
   int posY = 0;
   int len = 0;
   char buf[30] = {0};
-  const char* const* hints = NULL;
+  const char *const *hints = NULL;
   int lineCount = 0;
 
-  if (selectedOption == 1) {
+  if (selectedOption == OPTION_YES_OR_NO) {
     lineCount = 2;
     hints = QUESTION_HINTS_1;
-  } else if (selectedOption == 2) {
+  } else if (selectedOption == OPTION_TRIGRAM) {
     lineCount = 3;
     hints = QUESTION_HINTS_2;
   }
 
-  posY = (SCREEN_HEIGHT - ENGLISH_CHAR_HEIGHT * lineCount + seperator_height) / 2;
+  posY =
+      (SCREEN_HEIGHT - ENGLISH_CHAR_HEIGHT * lineCount + seperator_height) / 2;
 
   u8g2.setFont(FONT_EN);
   u8g2.firstPage();
   do {
-    for (int i=0;i<lineCount;i++) {
+    for (int i = 0; i < lineCount; i++) {
       strcpy_P(buf, (char *)pgm_read_word(&hints[i]));
       len = strlen(buf);
       posX = (SCREEN_WIDTH - len * ENGLISH_CHAR_WIDTH) / 2;
@@ -235,12 +249,49 @@ void animationView() {
 }
 
 void explainYesNoView() {
-  char buf[52] = {0};
+  if (wait(2000)) {
+    // go back to landing view.
+    navigateTo(landingView);
+    return;
+  }
+
+  static int r = -1;
+  if (r < 0) {
+    r = rand() % 2;
+  }
+
+  const int seperator_height = ENGLISH_CHAR_HEIGHT;
+
+  int posX = 0;
+  int posY = 0;
+  int len = 0;
+  char buf[30] = {0};
+  int lineCount = 2;
+  const char *const *answer = NULL;
+
+  // random [0, 1].
+  if (r == 0) {
+    answer = NO;
+  } else {
+    answer = YES;
+  }
+
+  posY =
+      (SCREEN_HEIGHT - ENGLISH_CHAR_HEIGHT * lineCount + seperator_height) / 2;
 
   u8g2.setFont(FONT_EN);
   u8g2.firstPage();
   do {
-    u8g2.drawUTF8(0, 20, "buf");
+    for (int i = 0; i < lineCount; i++) {
+      strcpy_P(buf, (char *)pgm_read_word(&answer[i]));
+      len = strlen(buf);
+      posX = (SCREEN_WIDTH - len * ENGLISH_CHAR_WIDTH) / 2;
+      if (posX < 0) {
+        posX = 0;
+      }
+      u8g2.drawStr(posX, posY, buf);
+      posY += seperator_height + ENGLISH_CHAR_HEIGHT;
+    }
   } while (u8g2.nextPage());
 }
 
