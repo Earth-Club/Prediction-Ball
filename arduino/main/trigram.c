@@ -89,14 +89,20 @@ int sixagenary_day_to_six_god(int day) {
 }
 
 RAWTRIGRAM rolldice() {
+  #ifdef DEBUG
   printf("rolldice: ");
+  #endif
   RAWTRIGRAM raw = 0;
   for (int i = 0; i < 6; i++) {
     int r = rand() % 4;
     raw = (raw + r) << 2;
+    #ifdef DEBUG
     printf("%d ", r);
+    #endif
   }
+  #ifdef DEBUG
   printf(", RAWTRIGRAM(%d)\n", raw);
+  #endif
   return raw;
 }
 
