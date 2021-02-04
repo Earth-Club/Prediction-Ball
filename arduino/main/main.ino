@@ -139,15 +139,16 @@ void landingView() {
 
   if (present_mode) {
     static int present_count = 0;
+    if (present_count >= 2) {
+      // disalbe present_mode.
+      present_mode = 0;
+    }
+
     // wait for 1s then go to algorithmSelectingView.
     if (wait(1000)) {
       // navigate to algorithmSelectingView.
       navigateTo(algorithmSelectingView);
-      present_count = (present_count + 1) % 2;
-      if (present_count == 0) {
-        // disable present mode.
-        present_mode = 0;
-      }
+      present_count++;
     }
   }
 }
@@ -302,7 +303,7 @@ void animationView() {
 }
 
 void explainYesNoView() {
-  if (isFsrPressing()) {
+  if ((present_mode && wait(2000)) || isFsrPressing()) {
     // go back to landing view.
     navigateTo(landingView);
     return;
@@ -336,7 +337,7 @@ void explainTrigramView() {
   const int maxLinePerPage = 5;
 
   const int trigram_line = 6;
-  const int header_line = 1;
+  const int header_line = 0;
   const int seperator_line = 1;
   const int bottom_line = 2;
 
@@ -355,14 +356,25 @@ void explainTrigramView() {
     altered_trigram = trigram_new(alterraw);
   }
 
-  if (wait(1000)) {
-    scrollTo++;
-  }
-
-  if (scrollTo >= scrollCycle * 2) {
-    // go back to landing view.
-    navigateTo(landingView);
-    return;
+  if (present_mode) {
+    if (wait(1000)) {
+      scrollTo++;
+    }
+    if (scrollTo >= scrollCycle * 2) {
+      // go back to landing view.
+      navigateTo(landingView);
+      return;
+    }
+  } else {
+    int btn_clicked = isFsrPressing();
+    if (btn_clicked == BUTTON_CLICK) {
+      // scroll to next line.
+      scrollTo++;
+    } else if (btn_clicked == BUTTON_LONG_PRESS) {
+      // go back to landing view.
+      navigateTo(landingView);
+      return;
+    }
   }
 
   int scrollToIdx = scrollTo % scrollCycle;
@@ -399,7 +411,7 @@ void explainTrigramView() {
   u8g2.firstPage();
   do {
     for (int x = 0; x < 4; x++) {
-      if (items[x] > 0) {
+      if (x % 2 == 0) {
         for (int i = 0; i < items[x]; i++) {
           if (lineIdx < scrollToIdx) {
             lineIdx++;
