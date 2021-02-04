@@ -302,7 +302,7 @@ void animationView() {
 }
 
 void explainYesNoView() {
-  if (wait(2000)) {
+  if (isFsrPressing()) {
     // go back to landing view.
     navigateTo(landingView);
     return;
@@ -645,7 +645,7 @@ int isFsrPressing() {
       press_at = millis();
     }
   } else {
-    if (duration > 200) {
+    if (duration > 0) {
       btn_clicked = BUTTON_CLICK;
     }
     press_at = 0;
