@@ -644,7 +644,7 @@ int isFsrPressing() {
       duration = now - press_at;
     }
 
-    if (duration > 1000) {
+    if (duration > 500) {
       // long press.
       btn_clicked = BUTTON_LONG_PRESS;
       press_at = ULONG_MAX;
@@ -657,7 +657,7 @@ int isFsrPressing() {
       press_at = millis();
     }
   } else {
-    if (duration > 0) {
+    if (duration > 100) {
       btn_clicked = BUTTON_CLICK;
     }
     press_at = 0;
