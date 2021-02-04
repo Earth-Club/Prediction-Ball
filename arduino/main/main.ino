@@ -56,6 +56,9 @@ U8G2_ST7567_ENH_DG128064_F_4W_SW_SPI u8g2(
     U8G2_MIRROR, /* SCK clock=*/6, /* SCL data=*/8, /* cs=*/1, /* A0 dc=*/3,
     /* RST=*/5);  // Pax Instruments Shield, LCD_BL=6
 
+// FSR Pin.
+#define FSR_PIN A3
+
 // index of loading animation.
 byte loadingAnimationPageIndex = 0;
 
@@ -66,7 +69,10 @@ byte selectedOption = 0;
 
 void setup() {
   // random.
-  srand(analogRead(A3));
+  srand(analogRead(FSR_PIN));
+  for(int i=0;i<3;i++) {
+    srand(rand());
+  }
 
   // init u8g2.
   u8g2.begin();
@@ -79,7 +85,8 @@ void loop() {
   u8g2.clearBuffer();
 
   if (gViewHandler == NULL) {
-    navigateTo(landingView);
+    // navigateTo(landingView);
+    navigateTo(debugView);
   }
 
   navigateToInternal();
@@ -491,4 +498,17 @@ bool wait(int ms) {
     }
   }
   return false;
+}
+
+void debugView() {
+  int fsrReading = analogRead(FSR_PIN);
+  char buf[32] = {0};
+  sprintf(buf, "%d", fsrReading);
+
+  u8g2.setFont(FONT_EN);
+  u8g2.firstPage();
+  do {
+
+    u8g2.drawStr(ENGLISH_CHAR_WIDTH * 2, ENGLISH_CHAR_HEIGHT * 2, buf);
+  } while(u8g2.nextPage());
 }
