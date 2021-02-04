@@ -70,7 +70,7 @@ byte selectedOption = 0;
 void setup() {
   // random.
   srand(analogRead(FSR_PIN));
-  for(int i=0;i<3;i++) {
+  for (int i = 0; i < 3; i++) {
     srand(rand());
   }
 
@@ -500,15 +500,96 @@ bool wait(int ms) {
   return false;
 }
 
-void debugView() {
-  int fsrReading = analogRead(FSR_PIN);
-  char buf[32] = {0};
-  sprintf(buf, "%d", fsrReading);
+void debugView() { fsrButtonTestView(); }
 
+void fsrButtonTestView() {
+  int fsrReading = analogRead(FSR_PIN);
+  int pressing = isFsrPressing();
+
+  const int lines = 2;
+  const int line_space = 2;
+  const int char_height = ENGLISH_CHAR_HEIGHT;
+  const int deltaY = line_space + char_height;
+  int posY = pos_y_in_middle(char_height, line_space, lines);
+
+  char buf[32] = {0};
   u8g2.setFont(FONT_EN);
   u8g2.firstPage();
   do {
+    sprintf(buf, "fsr: %d", fsrReading);
+    u8g2.drawStr(pos_x_in_center(ENGLISH_CHAR_WIDTH, strlen(buf)), posY, buf);
 
-    u8g2.drawStr(ENGLISH_CHAR_WIDTH * 2, ENGLISH_CHAR_HEIGHT * 2, buf);
-  } while(u8g2.nextPage());
+    // sprintf(buf, "press_at: %u", press_at);
+    // posY += deltaY;
+    // u8g2.drawStr(pos_x_in_center(ENGLISH_CHAR_WIDTH, strlen(buf)), posY, buf);
+
+    if (pressing == 1) {
+      sprintf(buf, "Just a click");
+    } else if (pressing == 2) {
+      sprintf(buf, "Long click");
+    } else {
+      sprintf(buf, "Click me!!!");
+    }
+    posY += deltaY;
+    u8g2.drawStr(pos_x_in_center(ENGLISH_CHAR_WIDTH, strlen(buf)), posY, buf);
+
+  } while (u8g2.nextPage());
+
+  // u8g2.firstPage();
+  // do {
+  //   if (pressing) {
+  //     u8g2.drawXBMP(0, 0, OPEN_MOUTH_WIDTH, OPEN_MOUTH_HEIGHT,
+  //     OPEN_MOUTH_DATA);
+  //   } else {
+  //     u8g2.drawXBMP(0, 0, SHUT_MOUTH_WIDTH, SHUT_MOUTH_HEIGHT,
+  //     SHUT_MOUTH_DATA);
+  //   }
+  // } while (u8g2.nextPage());
+  delay(500);
+}
+
+int isFsrPressing() {
+  int fsrReading = analogRead(FSR_PIN);
+  int pressing = fsrReading > 900 ? 1 : 0;
+
+  static unsigned long press_at = 0;
+
+  int ret = 0;
+  if (pressing) {
+    if (press_at == 0) {
+      // record start time.
+      press_at = millis();
+    }
+  } else if (press_at > 0) {
+    int duration = millis() - press_at;
+    if (duration > 2000) {
+      // long press.
+      ret = 2;
+    } else if (duration > 200) {
+      // short press.
+      ret = 1;
+    }
+    // reset.
+    press_at = 0;
+  }
+
+  return ret;
+}
+
+int isClicked() { return isFsrPressing() == 1 ? 1 : 0; }
+
+int isLongClicked() { return isFsrPressing() == 2 ? 1 : 0; }
+
+int pos_x_in_center(int char_width, int char_len) {
+  return (SCREEN_WIDTH - char_len * char_width) / 2;
+}
+
+int pos_y_in_middle(int char_height, int line_space, int lines) {
+  if (lines > 1) {
+    return (SCREEN_HEIGHT - (char_height + line_space) * lines + line_space) /
+               2 +
+           char_height;
+  } else {
+    return (SCREEN_HEIGHT - char_height * lines) / 2 + char_height;
+  }
 }
