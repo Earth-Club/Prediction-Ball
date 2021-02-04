@@ -41,7 +41,7 @@ static const char YAO_NAMES_2[] PROGMEM = "三";
 static const char YAO_NAMES_3[] PROGMEM = "四";
 static const char YAO_NAMES_4[] PROGMEM = "五";
 static const char YAO_NAMES_5[] PROGMEM = "上";
-static const char *const YAO_NAMES[] = {YAO_NAMES_0, YAO_NAMES_1, YAO_NAMES_2,
+static const char *const YAO_NAMES[] PROGMEM = {YAO_NAMES_0, YAO_NAMES_1, YAO_NAMES_2,
                                         YAO_NAMES_3, YAO_NAMES_4, YAO_NAMES_5};
 
 static const char TRIGRAM_NAMES_0[] PROGMEM = "坤为地";
@@ -108,7 +108,7 @@ static const char TRIGRAM_NAMES_60[] PROGMEM = "雷天大壮";
 static const char TRIGRAM_NAMES_61[] PROGMEM = "火天大有";
 static const char TRIGRAM_NAMES_62[] PROGMEM = "泽天夬";
 static const char TRIGRAM_NAMES_63[] PROGMEM = "乾为天";
-static const char *const TRIGRAM_NAMES[] = {
+static const char *const TRIGRAM_NAMES[] PROGMEM = {
     TRIGRAM_NAMES_0,  TRIGRAM_NAMES_1,  TRIGRAM_NAMES_2,  TRIGRAM_NAMES_3,
     TRIGRAM_NAMES_4,  TRIGRAM_NAMES_5,  TRIGRAM_NAMES_6,  TRIGRAM_NAMES_7,
     TRIGRAM_NAMES_8,  TRIGRAM_NAMES_9,  TRIGRAM_NAMES_10, TRIGRAM_NAMES_11,
@@ -134,7 +134,7 @@ static const char EIGHT_GONGS_4[] PROGMEM = "震";
 static const char EIGHT_GONGS_5[] PROGMEM = "离";
 static const char EIGHT_GONGS_6[] PROGMEM = "兑";
 static const char EIGHT_GONGS_7[] PROGMEM = "乾";
-static const char *const EIGHT_GONGS[] = {
+static const char *const EIGHT_GONGS[] PROGMEM = {
     EIGHT_GONGS_0, EIGHT_GONGS_1, EIGHT_GONGS_2, EIGHT_GONGS_3,
     EIGHT_GONGS_4, EIGHT_GONGS_5, EIGHT_GONGS_6, EIGHT_GONGS_7};
 

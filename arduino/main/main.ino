@@ -320,7 +320,7 @@ void explainTrigramView() {
   int altered_trigram_five_element =
       eight_gong_to_five_element(altered_trigram_eight_gong);
 
-  char buf[52] = {0};
+  char buf[64] = {0};
 
   int items[] = {header_line, 0, seperator_line, 0};
 
@@ -350,8 +350,9 @@ void explainTrigramView() {
         if (x == 1) {
           // trigram.
           if (i == trigram_line) {
-            char trigram_name[13] = {0};
-            strcpy_P(trigram_name,(char *)pgm_read_word(&(TRIGRAM_NAMES[(int)trigram])));
+            char trigram_name[14] = {0};
+            strcpy_P(trigram_name,
+                     (char *)pgm_read_word(&(TRIGRAM_NAMES[(int)trigram])));
             sprintf(buf, " 本卦 %s", trigram_name);
           } else {
             format_my_trigram(buf, trigram, i, orig_shi_yao_idx,
@@ -360,8 +361,9 @@ void explainTrigramView() {
         } else if (x == 3) {
           // altered trigram.
           if (i == trigram_line) {
-            char trigram_name[13] = {0};
-            strcpy_P(trigram_name,(char *)pgm_read_word(&(TRIGRAM_NAMES[(int)altered_trigram])));
+            char trigram_name[14] = {0};
+            strcpy_P(trigram_name, (char *)pgm_read_word(
+                                       &(TRIGRAM_NAMES[(int)altered_trigram])));
             sprintf(buf, " 变卦 %s", trigram_name);
           } else {
             format_my_trigram(buf, altered_trigram, i, altered_shi_yao_idx,
