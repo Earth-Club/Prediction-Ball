@@ -138,10 +138,16 @@ void landingView() {
   } while (u8g2.nextPage());
 
   if (present_mode) {
+    static int present_count = 0;
     // wait for 1s then go to algorithmSelectingView.
     if (wait(1000)) {
       // navigate to algorithmSelectingView.
       navigateTo(algorithmSelectingView);
+      present_count = (present_count + 1) % 2;
+      if (present_count == 0) {
+        // disable present mode.
+        present_mode = 0;
+      }
     }
   }
 }
@@ -152,11 +158,11 @@ void algorithmSelectingView() {
   static int autoSelectionStatus = 0;
   static int optionColor[2] = {1, 0};
 
-  if (wait(600)) {
-    autoSelectionStatus++;
-  }
-
   if (present_mode) {
+    if (wait(600)) {
+      autoSelectionStatus++;
+    }
+
     if (selectedOption == OPTION_TRIGRAM ||
         selectedOption == OPTION_YES_OR_NO) {
       selectedOption = (selectedOption + 1) % 4;
@@ -260,7 +266,7 @@ void algorithmSelectingView() {
 }
 
 void questionHintView() {
-  if (wait(2000)) {
+  if (wait(4000)) {
     navigateTo(animationView);
     return;
   }
@@ -280,7 +286,7 @@ void questionHintView() {
 }
 
 void animationView() {
-  if (wait(2000)) {
+  if (wait(1000)) {
     if (selectedOption == OPTION_YES_OR_NO) {
       navigateTo(explainYesNoView);
     } else if (selectedOption == OPTION_TRIGRAM) {
@@ -639,7 +645,7 @@ int isFsrPressing() {
       press_at = millis();
     }
   } else {
-    if (duration > 200 ) {
+    if (duration > 200) {
       btn_clicked = BUTTON_CLICK;
     }
     press_at = 0;
