@@ -9,6 +9,7 @@
 #include <Wire.h>
 #endif
 
+#include <limits.h>
 #include <time.h>
 
 #include "animation.h"
@@ -26,6 +27,9 @@
 #define FONT_CN u8g2_font_wqy9_t_chinese4
 #define CHINESE_CHAR_HEIGHT 9
 #define CHINESE_CHAR_WIDTH 9
+
+#define BUTTON_CLICK 1
+#define BUTTON_LONG_PRESS 2
 
 const char QUESTION_HINT_10[] PROGMEM = {"Please repeat your"};
 const char QUESTION_HINT_11[] PROGMEM = {"question in mind"};
@@ -106,11 +110,11 @@ void landingView() {
   const int char_height = ENGLISH_CHAR_HEIGHT;
   const int deltaY = char_height + line_space;
 
-  int ret = isFsrPressing();
-  if (ret == 2) {
+  int btn_clicked = isFsrPressing();
+  if (btn_clicked == BUTTON_LONG_PRESS) {
     // long click to present_mode.
     present_mode = 1;
-  } else if (ret == 1) {
+  } else if (btn_clicked == BUTTON_CLICK) {
     // short click to nextview.
     navigateTo(algorithmSelectingView);
     return;
@@ -190,13 +194,13 @@ void algorithmSelectingView() {
     }
 
     // check pressing status.
-    int pressing = isFsrPressing();
-    if (pressing == 1) {
-      // short click to next view.
+    int btn_clicked = isFsrPressing();
+    if (btn_clicked == BUTTON_LONG_PRESS) {
+      // long click to next view.
       navigateTo(questionHintView);
       return;
-    } else if (pressing == 2) {
-      // long click to move selection to next.
+    } else if (btn_clicked == BUTTON_CLICK) {
+      // short click to move selection to next.
       selectedOption = (selectedOption + 2) % 4;
 
       if (selectedOption == OPTION_YES_OR_NO) {
@@ -600,7 +604,7 @@ void fsrButtonTestView() {
   //     SHUT_MOUTH_DATA);
   //   }
   // } while (u8g2.nextPage());
-  delay(500);
+  delay(100);
 }
 
 int isFsrPressing() {
@@ -609,26 +613,39 @@ int isFsrPressing() {
 
   static unsigned long press_at = 0;
 
-  int ret = 0;
+  int btn_clicked = 0;
+
+  unsigned long duration = 0;
+
+  // long press.
+  if (press_at > 0 && press_at < ULONG_MAX) {
+    unsigned long now = millis();
+    if (now < press_at) {
+      duration = ULONG_MAX - press_at + now;
+    } else {
+      duration = now - press_at;
+    }
+
+    if (duration > 1000) {
+      // long press.
+      btn_clicked = BUTTON_LONG_PRESS;
+      press_at = ULONG_MAX;
+    }
+  }
+
   if (pressing) {
     if (press_at == 0) {
       // record start time.
       press_at = millis();
     }
-  } else if (press_at > 0) {
-    int duration = millis() - press_at;
-    if (duration > 2000) {
-      // long press.
-      ret = 2;
-    } else if (duration > 200) {
-      // short press.
-      ret = 1;
+  } else {
+    if (duration > 200 ) {
+      btn_clicked = BUTTON_CLICK;
     }
-    // reset.
     press_at = 0;
   }
 
-  return ret;
+  return btn_clicked;
 }
 
 int isClicked() { return isFsrPressing() == 1 ? 1 : 0; }
