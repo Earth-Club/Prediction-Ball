@@ -46,6 +46,9 @@ const char NO_0[] PROGMEM = {"No. Wait for the"};
 const char NO_1[] PROGMEM = {"signal come."};
 const char *const NO[] PROGMEM = {NO_0, NO_1};
 
+// present mode.
+int present_mode = 0;
+
 // view function handler.
 typedef void (*ViewHandler)();
 static ViewHandler gViewHandler = NULL;
@@ -85,8 +88,8 @@ void loop() {
   u8g2.clearBuffer();
 
   if (gViewHandler == NULL) {
-    // navigateTo(landingView);
-    navigateTo(debugView);
+    navigateTo(landingView);
+    // navigateTo(debugView);
   }
 
   navigateToInternal();
@@ -98,21 +101,44 @@ void loop() {
 // 1st view.
 void landingView() {
   // display "What's your doubt" message.
-  int posY = (SCREEN_HEIGHT + ENGLISH_CHAR_HEIGHT) / 2;
+  const int line_space = 2;
+  const int char_width = ENGLISH_CHAR_WIDTH;
+  const int char_height = ENGLISH_CHAR_HEIGHT;
+  const int deltaY = char_height + line_space;
+
+  int ret = isFsrPressing();
+  if (ret == 2) {
+    // long click to present_mode.
+    present_mode = 1;
+  } else if (ret == 1) {
+    // short click to nextview.
+    navigateTo(algorithmSelectingView);
+    return;
+  }
 
   char *msg = "What's your doubt?";
-  int posX = 14;
+  int posX = pos_x_in_center(char_width, strlen(msg));
+  int posY = pos_y_in_middle(char_height, line_space, 2);
 
+  u8g2.setFont(FONT_EN);
   u8g2.firstPage();
   do {
-    u8g2.setFont(FONT_EN);
     u8g2.drawUTF8(posX, posY, msg);
+
+    if (present_mode) {
+      msg = "present mode is ON";
+      posX = pos_x_in_center(char_width, strlen(msg));
+      posY += deltaY;
+      u8g2.drawUTF8(posX, posY, msg);
+    }
   } while (u8g2.nextPage());
 
-  // wait for 1s then go to algorithmSelectingView.
-  if (wait(1000)) {
-    // navigate to algorithmSelectingView.
-    navigateTo(algorithmSelectingView);
+  if (present_mode) {
+    // wait for 1s then go to algorithmSelectingView.
+    if (wait(1000)) {
+      // navigate to algorithmSelectingView.
+      navigateTo(algorithmSelectingView);
+    }
   }
 }
 
@@ -126,33 +152,61 @@ void algorithmSelectingView() {
     autoSelectionStatus++;
   }
 
-  if (selectedOption == OPTION_TRIGRAM || selectedOption == OPTION_YES_OR_NO) {
-    selectedOption = (selectedOption + 1) % 4;
-  }
+  if (present_mode) {
+    if (selectedOption == OPTION_TRIGRAM ||
+        selectedOption == OPTION_YES_OR_NO) {
+      selectedOption = (selectedOption + 1) % 4;
+    }
 
-  if (selectedOption == 2 && autoSelectionStatus > 3) {
-    // select six yao.
-    selectedOption = OPTION_TRIGRAM;
-  } else if (selectedOption == 0 && autoSelectionStatus > 2) {
-    // select yes or not.
-    selectedOption = OPTION_YES_OR_NO;
-  }
+    if (selectedOption == 2 && autoSelectionStatus > 3) {
+      // select six yao.
+      selectedOption = OPTION_TRIGRAM;
+    } else if (selectedOption == 0 && autoSelectionStatus > 2) {
+      // select yes or not.
+      selectedOption = OPTION_YES_OR_NO;
+    }
 
-  if (selectedOption == OPTION_TRIGRAM || selectedOption == OPTION_YES_OR_NO) {
-    autoSelectionStatus = 0;
-    navigateTo(questionHintView);
-    return;
-  }
+    if (selectedOption == OPTION_TRIGRAM ||
+        selectedOption == OPTION_YES_OR_NO) {
+      autoSelectionStatus = 0;
+      navigateTo(questionHintView);
+      return;
+    }
 
-  switch (autoSelectionStatus % 2) {
-    case 0:
-      optionColor[0] = 1;
-      optionColor[1] = 0;
-      break;
-    case 1:
-      optionColor[0] = 0;
-      optionColor[1] = 1;
-      break;
+    switch (autoSelectionStatus % 2) {
+      case 0:
+        optionColor[0] = 1;
+        optionColor[1] = 0;
+        break;
+      case 1:
+        optionColor[0] = 0;
+        optionColor[1] = 1;
+        break;
+    }
+  } else {
+    // init.
+    if (selectedOption == 0) {
+      selectedOption = OPTION_YES_OR_NO;
+    }
+
+    // check pressing status.
+    int pressing = isFsrPressing();
+    if (pressing == 1) {
+      // short click to next view.
+      navigateTo(questionHintView);
+      return;
+    } else if (pressing == 2) {
+      // long click to move selection to next.
+      selectedOption = (selectedOption + 2) % 4;
+
+      if (selectedOption == OPTION_YES_OR_NO) {
+        optionColor[0] = 1;
+        optionColor[1] = 0;
+      } else if (selectedOption == OPTION_TRIGRAM) {
+        optionColor[0] = 0;
+        optionColor[1] = 1;
+      }
+    }
   }
 
   // display "Please choose your method:".
@@ -521,7 +575,8 @@ void fsrButtonTestView() {
 
     // sprintf(buf, "press_at: %u", press_at);
     // posY += deltaY;
-    // u8g2.drawStr(pos_x_in_center(ENGLISH_CHAR_WIDTH, strlen(buf)), posY, buf);
+    // u8g2.drawStr(pos_x_in_center(ENGLISH_CHAR_WIDTH, strlen(buf)), posY,
+    // buf);
 
     if (pressing == 1) {
       sprintf(buf, "Just a click");
