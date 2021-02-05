@@ -309,8 +309,8 @@ void explainYesNoView() {
     return;
   }
 
-  static int r = -1;
-  if (r < 0) {
+  static int r = 1;
+  if (viewHasChanged()) {
     r = rand() % 2;
   }
 
